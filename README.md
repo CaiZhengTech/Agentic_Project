@@ -17,6 +17,7 @@ for implementation detail.
 ## Local setup
 
 1. Python 3.13, `python -m venv .venv`, activate, `pip install -r requirements.txt`
-2. Secrets: see `.env.example` — locally they live in a machine-level env file
-   (path in `triagedesk/config.py`), never in the repo
+2. Secrets: see `.env.example` — set `TRIAGEDESK_ENV_FILE` to the absolute path of a
+   credentials env file (e.g., `setx TRIAGEDESK_ENV_FILE "<path>"` on Windows);
+   secrets never live in the repo
 3. `alembic upgrade head` (dev DB), `pytest` (integration tests need `TEST_DATABASE_URL`)

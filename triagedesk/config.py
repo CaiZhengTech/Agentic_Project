@@ -4,9 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Local dev reads the machine-level secrets file; CI/Railway set real env vars
 # (a missing env_file is silently ignored by pydantic-settings).
-_ENV_FILE = os.environ.get(
-    "TRIAGEDESK_ENV_FILE", r"C:\Users\Wonton Soup\.secrets\credentials.env"
-)
+_ENV_FILE = os.environ.get("TRIAGEDESK_ENV_FILE")
 
 
 class Settings(BaseSettings):
