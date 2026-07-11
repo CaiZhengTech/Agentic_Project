@@ -5,26 +5,28 @@ Northeast US (NYC/Boston) new-grad SWE roles, fall 2026 cycle. The differentiato
 agent — it's the eval/observability/trust discipline around it (market research: eval design
 is the #1 hiring signal; plain RAG demos are a yellow flag).
 
-## Status (updated 2026-07-10)
+## Status (updated 2026-07-11)
 
-**Planning is COMPLETE. Implementation has NOT started.** Everything below is done:
+**Week 1 implementation IN PROGRESS — 5 of 9 plan tasks done.**
+**→ RESUME HERE: read `docs/sessions/2026-07-11-week1-handoff.md`** (full state, decisions,
+council verdict, and the exact next dispatch). Per-task detail: `.superpowers/sdd/progress.md`.
 
-- **Spec written + committed:** `docs/superpowers/specs/2026-07-10-triagedesk-design.md`
-  (self-reviewed; the full design record — read it before changing anything)
-- **Repo live:** https://github.com/CaiZhengTech/Agentic_Project (main pushed; gh CLI
-  authed as CaiZhengTech; Cai uses GitHub Desktop to watch changes)
-- **Issue tracker complete:** 19 issues (#1–#19), precedence-numbered in titles
-  (`00 ·` … `18 ·`), week-labeled (week-1..4, chore), dependency-linked. Issues #1–#18
-  map to execution order 01–18; issue #19 is "00 · Chore: friend labeling favor" (Day 1).
-- **llm-council review: 4 rounds done** (scope; pipeline; error/testing/deploy; final
-  greenlight). Round 4 verdict: greenlit after rebalancing Wk1 from 13 → 7 issues.
-  Full council history in spec Section 13.
-- **Research saved to vault:** `Cai Brain/raw/2026-07-10-agentic-portfolio-market-research.md`
-  (logged in vault log.md; awaiting SCREEN → INGEST in a vault session)
+- **Week 1 plan committed:** `docs/superpowers/plans/2026-07-10-week1-pipeline-skeleton.md`
+  (9 tasks covering issues #1–#7; executed via superpowers:subagent-driven-development)
+- **Done + merged:** issues #1 (scaffolding+CI), #2 (DB layer + 11,922 tickets ingested),
+  #3 (tracing layer). Issue #19 (friend favor) closed. Each closed issue carries a
+  closeout comment (standing preference — keep doing this).
+- **In flight:** issue #4 half-done — Task 5 (schemas + LLM client) approved on
+  `feat/04-precheck-classify` (PR #23 OPEN); Task 6 lands on the same branch, then merge.
+- **Model decision (2026-07-11, supersedes spec's Opus mention):** pipeline pinned to
+  `claude-sonnet-4-6`, effort high; adaptive thinking in the act loop only. Judge can run
+  temp 0 on the same model (old conflict resolved).
+- **Key incident:** plan's `structured_call` was broken against the real SDK despite green
+  mocked tests; redesigned + SDK-verified. Council verdict (5 advisors + peer review):
+  continue, but Task 8 is GATED on a live-SDK spike whose responses get committed as test
+  fixtures. Details + adopted action list in the handoff doc.
 
-**NEXT STEP:** invoke superpowers:writing-plans for the **Week 1 plan only**
-(plans are written one-per-week, just-in-time — never all upfront). Then implement
-issue-by-issue starting at #00 (text the friend) and #01 (scaffolding).
+**Spec remains the design record:** `docs/superpowers/specs/2026-07-10-triagedesk-design.md`.
 
 ## Development process (issue-driven — follow this)
 
