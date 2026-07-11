@@ -5,26 +5,27 @@ Northeast US (NYC/Boston) new-grad SWE roles, fall 2026 cycle. The differentiato
 agent — it's the eval/observability/trust discipline around it (market research: eval design
 is the #1 hiring signal; plain RAG demos are a yellow flag).
 
-## Status (updated 2026-07-11)
+## Status (updated 2026-07-11, end of day)
 
-**Week 1 implementation IN PROGRESS — 5 of 9 plan tasks done.**
-**→ RESUME HERE: read `docs/sessions/2026-07-11-week1-handoff.md`** (full state, decisions,
-council verdict, and the exact next dispatch). Per-task detail: `.superpowers/sdd/progress.md`.
+**Week 1 implementation — 7 of 9 tasks done; issues #1–#5 closed. ⛔ BLOCKED on Anthropic
+API credits** (Cai topping up; ~$10 covers Weeks 1–2 at ~5–9¢/full pipeline run).
+**→ RESUME HERE: read `docs/sessions/2026-07-11-week1-handoff.md`** (blocker, full state,
+council-adjusted next steps, standing preferences). Per-task detail: `.superpowers/sdd/progress.md`.
 
-- **Week 1 plan committed:** `docs/superpowers/plans/2026-07-10-week1-pipeline-skeleton.md`
-  (9 tasks covering issues #1–#7; executed via superpowers:subagent-driven-development)
-- **Done + merged:** issues #1 (scaffolding+CI), #2 (DB layer + 11,922 tickets ingested),
-  #3 (tracing layer). Issue #19 (friend favor) closed. Each closed issue carries a
-  closeout comment (standing preference — keep doing this).
-- **In flight:** issue #4 half-done — Task 5 (schemas + LLM client) approved on
-  `feat/04-precheck-classify` (PR #23 OPEN); Task 6 lands on the same branch, then merge.
-- **Model decision (2026-07-11, supersedes spec's Opus mention):** pipeline pinned to
-  `claude-sonnet-4-6`, effort high; adaptive thinking in the act loop only. Judge can run
-  temp 0 on the same model (old conflict resolved).
-- **Key incident:** plan's `structured_call` was broken against the real SDK despite green
-  mocked tests; redesigned + SDK-verified. Council verdict (5 advisors + peer review):
-  continue, but Task 8 is GATED on a live-SDK spike whose responses get committed as test
-  fixtures. Details + adopted action list in the handoff doc.
+- **Merged + closed:** #1 scaffolding+CI, #2 DB+ingest (11,922 tickets live), #3 tracing,
+  #4 schemas+LLM client+precheck/classify, #5 KB (15 docs, embedded)+retrieve. #19 closed.
+  Every closed issue carries a narrative closeout comment (standing preference).
+- **Next:** live-SDK spike (council gate; script ready) → Task 8 act loop (issue #6, mocks
+  from committed fixture) → Task 9 gate/runner/CLI + E2E checkpoint (issue #7) → **STOP for
+  Cai's llm-council checkpoint before anything Week 2**.
+- **Model:** `claude-sonnet-4-6`, effort high; adaptive thinking in act loop only. Judge can
+  run temp 0 on the same model.
+- **Infra facts:** branch protection on main (test check + up-to-date required; verify
+  `gh pr checks` before merge); `TRIAGEDESK_ENV_FILE` env var required for anything touching
+  settings (no hardcoded path anymore); CI runs bare `pytest` (pythonpath fix in pyproject).
+- **Key incident on record:** plan's `structured_call` broken vs real SDK despite green mocked
+  tests → redesigned + SDK-verified → standing SDK-reality rule in plan Global Constraints
+  (new SDK surface = live smoke + committed fixture first).
 
 **Spec remains the design record:** `docs/superpowers/specs/2026-07-10-triagedesk-design.md`.
 

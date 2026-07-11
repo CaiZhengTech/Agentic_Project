@@ -1,98 +1,100 @@
-# Session Handoff — 2026-07-11 (Week 1 execution, Tasks 1–5)
+# Session Handoff — 2026-07-11 (Week 1 execution: Tasks 1–7 done, BLOCKED on API credits)
 
-**Read this first when resuming.** It records everything done and decided in the 2026-07-10/11
-sessions so work continues without re-derivation. Detailed per-task record lives in
-`.superpowers/sdd/progress.md` (git-ignored scratch — survives locally, not on GitHub).
+**Read this first when resuming.** Updated end-of-day 2026-07-11; supersedes the morning
+version. Per-task detail: `.superpowers/sdd/progress.md` (git-ignored, local only).
+
+## ⛔ THE BLOCKER (resolve first)
+
+**The Anthropic API key has no credits** — real model calls 400 with "credit balance too low"
+(key itself is valid; nothing was billed; Voyage embeddings unaffected). Cai is topping up at
+console.anthropic.com → Plans & Billing. **$10 ≈ 120–180 full pipeline runs** (~5–9¢/run on
+Sonnet 4.6) → covers Weeks 1–2; expect one more $5–10 top-up in Week 3 for demo+video.
+AWS free-credits-via-Bedrock was evaluated and REJECTED for the critical path (free-plan
+accounts often can't access Anthropic Bedrock models; migration friction > $ saved).
+
+**The moment credits land:** run the SDK spike (script already written:
+`<scratchpad>/sdk_spike.py` — if the scratchpad is gone, recreate from the spec in
+"Next steps" below), then dispatch Task 8.
 
 ## Where things stand
 
-**Executing the Week 1 plan** (`docs/superpowers/plans/2026-07-10-week1-pipeline-skeleton.md`)
-via superpowers subagent-driven development: fresh implementer subagent per task → independent
-reviewer per task → fix loops → controller merges. **5 of 9 tasks complete.**
+Executing `docs/superpowers/plans/2026-07-10-week1-pipeline-skeleton.md` via
+superpowers:subagent-driven-development (implementer subagent → reviewer subagent → fix
+loops → controller merges, checks-gated). **7 of 9 tasks complete. Issues #1–#5 closed,
+each with a narrative closeout comment.**
 
 | Task | Issue | State |
 |---|---|---|
-| 1 Scaffolding + CI | #1 | ✅ merged (PR #20 → `9ccf497`), issue closed + closeout comment |
-| 2 DB models + Alembic | #2 | ✅ merged (PR #21 → `67d6f3b`), issue closed + closeout comment |
-| 3 Ticket ingest | #2 | ✅ same PR; **11,922 EN tickets live in Neon dev DB** (provably exact) |
-| 4 Tracing layer | #3 | ✅ merged (PR #22 → `3fa3a70`), issue closed + closeout comment |
-| 5 Schemas + LLM client | #4 | ✅ approved; **UNMERGED on `feat/04-precheck-classify` (PR #23 open)** — issue #4 spans Tasks 5+6; merge after Task 6 |
-| 6 Prompts + precheck/classify | #4 | ⏭ NEXT — dispatch onto `feat/04-precheck-classify` |
-| 7 KB docs + embeddings + retrieve | #5 | pending (KB authoring has a 2h timebox, no TDD ceremony) |
-| 8 Tools + act loop | #6 | pending — **gated by the live-SDK spike (see council verdict)** |
-| 9 Centroids + gate + runner + CLI + E2E | #7 | pending — Week 1 kill-criterion checkpoint |
+| 1 Scaffolding + CI | #1 | ✅ merged `9ccf497` |
+| 2+3 DB + ingest (11,922 tickets live) | #2 | ✅ merged `67d6f3b` |
+| 4 Tracing layer | #3 | ✅ merged `3fa3a70` |
+| 5+6 Schemas + LLM client + precheck/classify | #4 | ✅ merged `208be4c` |
+| 7 KB (15 docs, embedded) + retrieve | #5 | ✅ merged `19c1896` — first-pass approval, no fix loop |
+| 8 Tools + act loop | #6 | ⏭ NEXT — **gated on the SDK spike** (council rule) |
+| 9 Centroids + gate + runner + CLI + E2E checkpoint | #7 | pending — Week 1 kill-criterion gate |
 
-**Environment (all verified live):** Neon dev+test branches (Postgres 18.4, pgvector, migrations
-applied to both), Voyage key (1024-dim confirmed), Anthropic key, `TEST_DATABASE_URL` set as
-GitHub Actions secret, `.venv` on **Python 3.13** (plan re-pinned from 3.12 — machine has 3.13/3.14
-only). Issue #19 (friend labeling favor) closed — ask sent; labels optional, merge under #11 if
-they arrive.
+`main` = `19c1896`+docs, all green. No open PRs, no feature branches (all deleted at merge).
 
-## Decisions made today (binding)
+## New since the morning handoff
 
-1. **Pipeline model switched: Opus 4.8 → `claude-sonnet-4-6` at effort high** (Cai's call).
-   Effort defaults to high on 4.6; act loop additionally sets `output_config={"effort":"high"}` +
-   `thinking={"type":"adaptive"}`; structured calls stay plain. Pricing $3/$15 (cache 3.75/0.30).
-   Side effects: per-run cost comfortably under the $0.10 cap; Week-2 judge can run temp 0 on the
-   same model (Sonnet 4.6 accepts `temperature` — the old Opus conflict is RESOLVED).
-2. **Per-issue closeout comments** are now standing process (saved to memory:
-   `issue-closeout-comments`): at every issue close, post what-was-built / how-it-went /
-   decisions / next. Issues #1–#3 backfilled.
-3. **Plans get reconciliation notes when review supersedes plan code** (see plan's Task 5
-   `llm.py` block).
+- **CI was silently red since Task 2** (bare `pytest` vs `python -m pytest` sys.path —
+  caught by Cai): fixed via PR #24 (`pythonpath=["."]` in pyproject). **Branch protection
+  now on `main`**: PRs need the `test` check green + branch up-to-date (strict); admin doc
+  pushes bypass with a logged notice; `allow_auto_merge` enabled on the repo. Controller
+  rule: `gh pr checks --watch` before every merge.
+- **config.py hardened** (council item): env-file path ONLY from `TRIAGEDESK_ENV_FILE`
+  (no hardcoded default). Already `setx`'d on Cai's machine; **subagents/scripts must
+  `export TRIAGEDESK_ENV_FILE="C:\Users\Wonton Soup\.secrets\credentials.env"`** in their
+  shell before anything touching settings/DB/API.
+- **Plan Global Constraints gained the SDK-reality rule:** new SDK surface → live smoke
+  call + committed fixture BEFORE coding against it; mocks built from fixtures only.
+- **Demo strategy reaffirmed with Cai:** demo video = primary recruiter artifact; live
+  demo stays with seeded-pool-only input, per-IP rate limit, visible daily spend-cap pause
+  (Week 3 as specced — no design change).
+- **Cai's checkpoint plan:** he runs llm-council himself AFTER issue #7 (the confidence
+  gate / E2E checkpoint) before anything Week 2. Controller stops there and hands him a
+  state summary — do NOT start Week 2 planning without that.
 
-## THE incident of the day (drives tomorrow's first moves)
+## Next steps, in order (council-adjusted; items 1–2 are the current frontier)
 
-**Task 5's `structured_call` was plan-code with 4 green mocked tests and was provably broken
-against the real SDK:** the repair/refusal path was unreachable (`messages.parse()` raises
-`ValidationError` internally before returning), the repair turn stacked two consecutive `user`
-messages (API 400), and `output_format=` is deprecated. A reviewer caught it by reading the
-installed SDK's source (`anthropic==0.116.0`). Redesigned (commit `8e3e55e`): `messages.create` +
-`output_config={"format": {"type": "json_schema", "schema": ...}}` + self-validation via
-`schema.model_validate_json`; real validation errors fed into the repair prompt; exceptions
-(`RepairFailedError`, `LLMRefusalError`) share a `StructuredCallError` base carrying `.responses`.
-Re-review verified every shape against the installed SDK. **Root cause: code + tests written from
-API memory; fakes simulated a state the real SDK never produces.**
+1. **SDK spike** (controller runs it, ~$0.05, max 6 calls): multi-turn tool_use exchange
+   against `claude-sonnet-4-6` with the act loop's EXACT config (max_tokens=4096,
+   `thinking={"type":"adaptive"}`, `output_config={"effort":"high"}`, the 3 TOOL_DEFS from
+   the Task 8 brief incl. strict `submit_resolution`); Dana/customer-3 scenario + a
+   max_tokens=64 truncation probe; capture `response.model_dump(mode="json")` per turn →
+   **commit as `tests/fixtures/sdk_tool_use_shapes.json`** as the first commit on a new
+   `feat/06-act-loop` branch. Print stop_reasons/block types/usage keys, never secrets.
+2. **Task 8** (issue #6) on that branch: brief at `.superpowers/sdd/task-8-brief.md`
+   (already extracted); dispatch must tell the implementer to build all mocks from the
+   committed fixture, not from imagined shapes.
+3. **Task 9** (issue #7): centroids script (~1,000 Voyage embeddings), gate, runner, CLI,
+   then the E2E CHECKPOINT: Dana's VPN ticket through all 5 stages live + the adverse-action
+   variant (premium feature request on basic plan) MUST end `escalated/adverse_action`.
+   Fire `how-we-got-here` after. Post closeout comments on #6/#7 at close (standing habit).
+4. **STOP.** Hand Cai the state summary for his llm-council run. The final whole-branch
+   review (most capable model; mandate includes sweeping Tasks 1–4 for latent
+   SDK-assumption bugs + triaging the deferred-minors ledger) can run before or as part of
+   that checkpoint conversation — Cai decides.
 
-## Council verdict (llm-council ran today on "green-light Tasks 6–9?")
+## Deferred minors ledger (final review triages; do NOT fix mid-sprint)
 
-Unanimous: don't pause, but **de-risk Task 8 before writing it** — the act loop codes against
-more unverified SDK surface (tool_use, `pause_turn`, thinking blocks) and currently nothing makes
-a live API call until Task 9, which is also the kill-criterion gate. Peer review sharpened the
-prescription. **Adopted next actions, in order:**
+starlette/httpx deprecation warning · ingest loop rollback guard / `newline=""` /
+`--limit 0` edge · no exactly-at-cap cost test · `record_llm_usage` bare AttributeError
+risk on malformed response · precheck `verdict.reason` not in span attrs ·
+`kb/reporting-security-concerns.md` ASCII `->` vs corpus `→` · Task 2 report's ruff-rule
+citation nit.
 
-1. **Task 6 now** on `feat/04-precheck-classify` — brief amended to also fix `config.py`:
-   drop the hardcoded Windows secrets-path default (publishes the username in a public repo);
-   path comes only from `TRIAGEDESK_ENV_FILE` env var. Cai must set that env var locally
-   (`setx TRIAGEDESK_ENV_FILE "C:\Users\Wonton Soup\.secrets\credentials.env"`). Merge PR #23
-   after review → closes #4 (+ closeout comment).
-2. **Task 7** normally (KB docs 2h timebox + embeddings + retrieve) → closes #5.
-3. **Before Task 8: the live-SDK spike** (controller runs it, ~$0.05, throwaway script):
-   a **multi-turn tool_use exchange** against the installed SDK, deliberately provoking the
-   stop reasons the loop branches on (tool_use, max_tokens; pause_turn if cheaply reachable);
-   print raw response objects AND `usage` fields; **commit captured shapes as a test fixture**
-   (e.g. `tests/fixtures/`) and amend Task 8's dispatch so mocks are built from the fixture,
-   not from the plan's imagined shapes.
-4. **Task 8** (act loop) → closes #6. **Task 9** (gate/runner/CLI + Dana E2E + adverse-action
-   E2E) → closes #7 = Week 1 checkpoint; fire `how-we-got-here` after.
-5. **Final whole-branch review** (most capable model) gets an added mandate: sweep Tasks 1–4
-   for the same latent bug class (green mocks over unverified SDK assumptions), plus triage the
-   deferred minors ledger.
-6. **Add to plan's Global Constraints:** standing rule — *new SDK surface → live smoke +
-   committed fixture before coding against it.*
+## Standing working preferences (Cai — keep honoring these)
 
-## Deferred minors (ledgered, for the final review — do NOT fix mid-sprint)
+- **Closeout comment on every issue at close** (built / how-it-went / decisions / next) —
+  memory `issue-closeout-comments`.
+- **Session-handoff md doc updated at every stopping point / milestone** (this file's
+  pattern; new dated file per session, CLAUDE.md status points at the latest) — memory
+  `session-handoff-docs`.
+- Token frugality; explanation style = plain-language, why-first, Dana as the worked example.
 
-- starlette/httpx deprecation warning in test output (pin compatible versions eventually)
-- ingest loop: no rollback/close guard; CSV opened without `newline=""`; `--limit 0` falsy edge
-- tracing: no exactly-at-cap test (`>` semantics); `record_llm_usage` could raise bare
-  `AttributeError` on a response lacking `.model`/`.usage`
-- Task 2 implementer report cited ruff violations that don't match the committed migration (doc nit)
+## How to resume
 
-## How to resume tomorrow
-
-1. Read this doc + `.superpowers/sdd/progress.md`; `git log --oneline -10` to confirm state
-   (main at `8a02453`+, `feat/04-precheck-classify` at `8e3e55e`, PR #23 open).
-2. Confirm Cai has set `TRIAGEDESK_ENV_FILE` (or fold the setx step into Task 6's manual notes).
-3. Dispatch Task 6 per item 1 above (subagent-driven; brief via `scripts/task-brief PLAN 6`;
-   base commit = `8e3e55e` on the feature branch). Continue the loop.
+1. Read this doc; `git log --oneline -5`; `cat .superpowers/sdd/progress.md`.
+2. Ask Cai if credits are loaded (blocker above). If yes → step 1 of "Next steps".
+3. Remember: `export TRIAGEDESK_ENV_FILE=...` in every shell that touches settings.
