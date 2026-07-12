@@ -1,0 +1,14 @@
+{
+  "customer-0":  {"name": "Alex Kim",      "status": "active",     "plan": "pro"},
+  "customer-1":  {"name": "Sam Rivera",    "status": "active",     "plan": "basic"},
+  "customer-2":  {"name": "Jordan Patel",  "status": "suspended",  "plan": "pro"},
+  "customer-3":  {"name": "Dana Fuentes",  "status": "active",     "plan": "basic"},
+  "customer-4":  {"name": "Casey Nguyen",  "status": "active",     "plan": "enterprise"},
+  "customer-5":  {"name": "Riley Chen",    "status": "delinquent", "plan": "basic"},
+  "customer-6":  {"name": "Morgan Lee",    "status": "active",     "plan": "pro"},
+  "customer-7":  {"name": "Taylor Brooks", "status": "active",     "plan": "basic"},
+  "customer-8":  {"name": "Jamie Okafor",  "status": "active",     "plan": "enterprise"},
+  "customer-9":  {"name": "Drew Santos",   "status": "suspended",  "plan": "basic"},
+  "customer-10": {"name": "Robin Walsh",   "status": "active",     "plan": "pro"},
+  "customer-11": {"name": "Avery Novak",   "status": "delinquent", "plan": "pro"}
+}
