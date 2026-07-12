@@ -33,3 +33,6 @@ Thumbs.db
 *.sqlite3
 .ipynb_checkpoints/
 data/
+# ...except triagedesk/data/ — committed generated code artifacts (e.g. queue_centroids.json)
+!triagedesk/data/
+!triagedesk/data/**
