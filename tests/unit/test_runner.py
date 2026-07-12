@@ -175,3 +175,14 @@ def test_anthropic_api_error_maps_to_failed(monkeypatch):
     run = runner.run_ticket(3, FakeSession())
     assert run.state == "failed"
     assert run.escalation_reason.startswith("api_error:")
+
+
+def test_unexpected_exception_maps_to_failed(monkeypatch):
+    def boom(ticket, tracer):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(runner, "run_precheck", boom)
+    run = runner.run_ticket(3, FakeSession())
+    assert run.state == "failed"
+    assert run.escalation_reason == "unexpected:RuntimeError"
+    assert "RuntimeError" in run.internal_rationale

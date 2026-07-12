@@ -86,6 +86,9 @@ def run_ticket(ticket_id: int, session) -> Run:
     except anthropic.APIError as exc:
         finish_run(session, run, "failed", reason=f"api_error:{type(exc).__name__}")
         _note(session, run, exc)
+    except Exception as exc:
+        finish_run(session, run, "failed", reason=f"unexpected:{type(exc).__name__}")
+        _note(session, run, exc)
     return run
 
 
