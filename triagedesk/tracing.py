@@ -100,18 +100,22 @@ class RunTracer:
 
     def record_llm_usage(self, span: Span, response) -> None:
         """Record gen_ai.* usage attrs and enforce the cost cap. Fail closed."""
-        cost = compute_cost(response.model, response.usage)  # raises CostUnknownError
+        model = getattr(response, "model", None)
+        usage = getattr(response, "usage", None)
+        if model is None or usage is None:
+            raise CostUnknownError(f"response missing model/usage: {response!r}")
+        cost = compute_cost(model, usage)  # raises CostUnknownError
         span.cost_usd = (span.cost_usd or 0.0) + cost
         prev = span.attributes or {}
         span.attributes = {
             **prev,
             "gen_ai.operation.name": "chat",
             "gen_ai.request.model": self.run.model,
-            "gen_ai.response.model": response.model,
+            "gen_ai.response.model": model,
             "gen_ai.usage.input_tokens": (prev.get("gen_ai.usage.input_tokens", 0)
-                                          + response.usage.input_tokens),
+                                          + usage.input_tokens),
             "gen_ai.usage.output_tokens": (prev.get("gen_ai.usage.output_tokens", 0)
-                                           + response.usage.output_tokens),
+                                           + usage.output_tokens),
         }
         self.run.total_cost_usd = (self.run.total_cost_usd or 0.0) + cost
         self.session.commit()

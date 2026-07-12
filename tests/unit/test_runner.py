@@ -8,7 +8,7 @@ from triagedesk.llm import LLMRefusalError, RepairFailedError
 from triagedesk.pipeline import runner
 from triagedesk.pipeline.act import ActOutcome, AgentIncompleteError, ToolFailedError
 from triagedesk.schemas import ClassifyResult, PrecheckVerdict, Resolution
-from triagedesk.tracing import BudgetExceededError
+from triagedesk.tracing import BudgetExceededError, CostUnknownError
 
 TICKET = SimpleNamespace(id=3, subject="My VPN keeps disconnecting",
                          body="Client demo at 3pm and my VPN drops every few minutes.")
@@ -116,6 +116,20 @@ def test_budget_exceeded_maps_to_escalated_budget_breach(monkeypatch):
     assert run.state == "escalated"
     assert run.escalation_reason == "budget_breach"
     assert "BudgetExceededError" in run.internal_rationale
+
+
+def test_cost_unknown_maps_to_escalated_budget_breach(monkeypatch):
+    monkeypatch.setattr(runner, "run_precheck",
+                         lambda ticket, tracer: PrecheckVerdict(safe=True))
+
+    def boom(ticket, tracer):
+        raise CostUnknownError("response missing model/usage")
+
+    monkeypatch.setattr(runner, "run_classify", boom)
+    run = runner.run_ticket(3, FakeSession())
+    assert run.state == "escalated"
+    assert run.escalation_reason == "budget_breach"
+    assert "CostUnknownError" in run.internal_rationale
 
 
 def test_repair_failed_maps_to_escalated_validation_failed(monkeypatch):

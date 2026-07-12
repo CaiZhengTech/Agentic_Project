@@ -75,6 +75,64 @@ def test_budget_breach_raises(monkeypatch):
         tracer.record_llm_usage(span, response)  # $0.036 > $0.01 cap
 
 
+def test_record_llm_usage_missing_usage_fails_closed():
+    from triagedesk import tracing
+    from triagedesk.models import Span
+
+    run = Run(state="running", prompt_version="w1-v1", model="claude-sonnet-4-6",
+              ticket_id=1, total_cost_usd=0.0)
+    tracer = tracing.RunTracer(FakeSession(), run)
+    span = Span(run_id=run.id, name="act", started_at=None, attributes={})
+    malformed_response = SimpleNamespace(model="claude-sonnet-4-6")  # no .usage at all
+    with pytest.raises(CostUnknownError):
+        tracer.record_llm_usage(span, malformed_response)
+
+
+def test_record_llm_usage_zero_tokens_no_breach():
+    from triagedesk import tracing
+    from triagedesk.models import Span
+
+    run = Run(state="running", prompt_version="w1-v1", model="claude-sonnet-4-6",
+              ticket_id=1, total_cost_usd=0.0)
+    tracer = tracing.RunTracer(FakeSession(), run)
+    span = Span(run_id=run.id, name="act", started_at=None, attributes={})
+    response = SimpleNamespace(model="claude-sonnet-4-6", usage=usage(0, 0))
+    tracer.record_llm_usage(span, response)  # should not raise
+    assert run.total_cost_usd == 0.0
+
+
+def test_record_llm_usage_cache_only_computes_correct_cost():
+    from triagedesk import tracing
+    from triagedesk.models import Span
+
+    run = Run(state="running", prompt_version="w1-v1", model="claude-sonnet-4-6",
+              ticket_id=1, total_cost_usd=0.0)
+    tracer = tracing.RunTracer(FakeSession(), run)
+    span = Span(run_id=run.id, name="act", started_at=None, attributes={})
+    cache_only_usage = SimpleNamespace(
+        input_tokens=0, output_tokens=0,
+        cache_creation_input_tokens=1000, cache_read_input_tokens=1000,
+    )
+    response = SimpleNamespace(model="claude-sonnet-4-6", usage=cache_only_usage)
+    tracer.record_llm_usage(span, response)
+    # 1000 cache-write @ $3.75/M + 1000 cache-read @ $0.30/M
+    assert run.total_cost_usd == pytest.approx(0.00405)
+
+
+def test_record_llm_usage_exactly_at_cap_is_not_a_breach(monkeypatch):
+    from triagedesk import tracing
+    from triagedesk.models import Span
+
+    monkeypatch.setattr(tracing.settings, "cost_cap_usd", 0.018)
+    run = Run(state="running", prompt_version="w1-v1", model="claude-sonnet-4-6",
+              ticket_id=1, total_cost_usd=0.0)
+    tracer = tracing.RunTracer(FakeSession(), run)
+    span = Span(run_id=run.id, name="act", started_at=None, attributes={})
+    response = SimpleNamespace(model="claude-sonnet-4-6", usage=usage(1000, 1000))  # cost == cap
+    tracer.record_llm_usage(span, response)  # should not raise: cap uses ">", not ">="
+    assert run.total_cost_usd == pytest.approx(0.018)
+
+
 def test_budget_accumulates_across_calls(monkeypatch):
     from triagedesk import tracing
     from triagedesk.models import Span
