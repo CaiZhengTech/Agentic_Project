@@ -85,6 +85,23 @@ def test_happy_path_lookup_then_resolve():
     assert submit_def["strict"] is True
 
 
+def test_entitlement_checked_reflects_check_entitlement_tool_execution():
+    checked_client = make_client([
+        response([tool_use_block("check_entitlement",
+                                 {"customer_ref": "customer-3", "feature": "dedicated_ip"})]),
+        response([RESOLUTION_CALL]),
+    ])
+    checked_outcome = run_act(TICKET, CLASSIFY, RETRIEVAL, FakeTracer(), _client=checked_client)
+    assert checked_outcome.entitlement_checked is True
+
+    unchecked_client = make_client([
+        response([tool_use_block("lookup_account_status", {"customer_ref": "customer-3"})]),
+        response([RESOLUTION_CALL]),
+    ])
+    unchecked_outcome = run_act(TICKET, CLASSIFY, RETRIEVAL, FakeTracer(), _client=unchecked_client)
+    assert unchecked_outcome.entitlement_checked is False
+
+
 def test_loop_exhaustion_escalates():
     lookup = tool_use_block("lookup_account_status", {"customer_ref": "customer-3"})
     client = make_client([response([lookup])] * 5)
@@ -179,6 +196,22 @@ def test_submit_resolution_with_parallel_entitlement_check(monkeypatch):
     assert outcome.resolution.resolution_type == "solve"
     assert outcome.entitlement_denied is True
     assert calls["n"] == 1  # entitlement tool was actually executed
+
+
+def test_pause_turn_continues_loop_without_tool_use():
+    """Mirrors a pause_turn stop_reason (thinking + text, no tool_use): the loop
+    must append the assistant turn and continue to the next call rather than
+    treating it as an incomplete turn."""
+    paused = response([thinking_block(), text_block()], stop_reason="pause_turn")
+    client = make_client([paused, response([RESOLUTION_CALL])])
+
+    outcome = run_act(TICKET, CLASSIFY, RETRIEVAL, FakeTracer(), _client=client)
+
+    assert outcome.resolution.resolution_type == "deny"
+    assert len(client.messages.calls) == 2
+    second_call_messages = client.messages.calls[1]["messages"]
+    assert len(second_call_messages) == 2
+    assert second_call_messages[-1]["role"] == "assistant"
 
 
 def test_max_tokens_truncation_is_incomplete():
