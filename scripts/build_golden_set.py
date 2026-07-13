@@ -18,7 +18,7 @@ from sqlalchemy import delete, select
 
 from triagedesk.db import SessionLocal
 from triagedesk.evals.adversarial import ADVERSARIAL
-from triagedesk.models import EvalCase, Ticket
+from triagedesk.models import EvalCase, EvalResult, Run, Span, Ticket
 from triagedesk.schemas import QUEUES
 
 SEED = 20260712
@@ -56,6 +56,10 @@ def seed_adversarial_tickets(session) -> list[tuple[int, dict]]:
     # ticket row and any eval_cases row referencing it), so repeated runs
     # converge to identical rows instead of minting new ids each time.
     ids = [spec["ticket_id"] for spec in ADVERSARIAL]
+    runs_to_delete = session.execute(select(Run.id).where(Run.ticket_id.in_(ids))).scalars().all()
+    if runs_to_delete:
+        session.execute(delete(Span).where(Span.run_id.in_(runs_to_delete)))
+    session.execute(delete(Run).where(Run.ticket_id.in_(ids)))
     session.execute(delete(EvalCase).where(EvalCase.ticket_id.in_(ids)))
     session.execute(delete(Ticket).where(Ticket.id.in_(ids)))
     session.flush()
@@ -78,11 +82,14 @@ def seed(session) -> None:
     assert all(r["expected_outcome"] in ("route", "escalate") for r in data), \
         "annotate every representative expected_outcome as route|escalate first"
 
+    session.execute(delete(EvalResult))
     session.execute(delete(EvalCase))
     for r in data:
         session.add(EvalCase(ticket_id=r["ticket_id"], kind="representative",
                              expected_outcome=r["expected_outcome"],
-                             expected_queue=r["expected_queue"], notes=r.get("notes")))
+                             expected_queue=r["expected_queue"],
+                             expected_escalation_reason=r.get("escalation_reason"),
+                             notes=r.get("notes")))
     for tid, spec in seed_adversarial_tickets(session):
         session.add(EvalCase(ticket_id=tid, kind="adversarial",
                              expected_outcome=spec["expected_outcome"],
