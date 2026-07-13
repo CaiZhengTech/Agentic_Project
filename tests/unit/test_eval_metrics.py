@@ -1,3 +1,6 @@
+from datetime import UTC, datetime
+
+from triagedesk.evals.harness import _latency_ms
 from triagedesk.evals.metrics import (
     CaseResult,
     adversarial_catch_rate,
@@ -8,6 +11,7 @@ from triagedesk.evals.metrics import (
     routing_accuracy,
     summarize,
 )
+from triagedesk.models import Run
 
 
 def rep(pq, eq="IT Support", eo="route", po="route", sim=0.8):
@@ -63,3 +67,34 @@ def test_summarize_is_flat_dict():
               "adversarial_catch_rate", "cost_per_run", "cost_total",
               "latency_p50_ms", "latency_p95_ms"):
         assert k in s
+
+
+def test_latency_ms_naive_and_aware_datetimes():
+    """Test _latency_ms with timezone-naive created_at and timezone-aware finished_at.
+
+    Reproduces the bug: server_default=func.now() creates naive datetime, but
+    finish_run() sets aware-UTC datetime. _latency_ms must normalize both.
+    """
+    # Naive created_at (from Postgres server_default), aware finished_at (from Python)
+    run = Run(
+        ticket_id=1,
+        state="completed",
+        prompt_version="1.0",
+        model="claude-sonnet-4-6",
+        created_at=datetime(2026, 7, 12, 10, 0, 0),  # naive
+        finished_at=datetime(2026, 7, 12, 10, 0, 30, tzinfo=UTC),  # aware
+    )
+    assert _latency_ms(run) == 30000.0
+
+
+def test_latency_ms_both_naive_datetimes():
+    """Test _latency_ms when both datetimes are naive."""
+    run = Run(
+        ticket_id=1,
+        state="completed",
+        prompt_version="1.0",
+        model="claude-sonnet-4-6",
+        created_at=datetime(2026, 7, 12, 10, 0, 0),  # naive
+        finished_at=datetime(2026, 7, 12, 10, 0, 30),  # naive
+    )
+    assert _latency_ms(run) == 30000.0
