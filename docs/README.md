@@ -54,10 +54,16 @@ same names in every week, so you always know what you're opening.
 ## 📊 Status
 
 **Week 2 (evals) — 6 of 7 tasks done.** Golden set, deterministic harness, LLM judge, and
-calibration tooling are merged. **Currently blocked on the human labeling checkpoint**
-(issue #11): 41 blind rows await labels in `judge_labels.csv` — see
-[`results/LABELING-INSTRUCTIONS.md`](../results/LABELING-INSTRUCTIONS.md). After that:
-Cohen's kappa, then the CI eval gate (issue #12, the Week-2 kill-criterion checkpoint).
+calibration tooling are merged (issues #8, #9, #10 closed).
+
+**⏸ Blocked on one human action:** Cai labels 41 blind rows in `judge_labels.csv` (see
+[`results/LABELING-INSTRUCTIONS.md`](../results/LABELING-INSTRUCTIONS.md)) → then Cohen's
+kappa + the disagreement analysis close issue #11. Task 7 (the CI eval gate, issue #12 —
+Week 2's kill criterion) can proceed in parallel.
+
+**To resume work:** read [`week-2-evals/HANDOFF.md`](week-2-evals/HANDOFF.md) — the
+controller operating manual (environment, tooling, the per-task choreography, budget rules,
+binding decisions).
 
 Live numbers so far: **100% adversarial catch rate**, escalation recall **1.0**,
 ~**2.9¢** per pipeline run, **41** judged replies awaiting human calibration.

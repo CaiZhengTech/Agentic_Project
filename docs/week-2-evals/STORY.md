@@ -101,8 +101,106 @@ ids (Postgres row order isn't deterministic — sorting first is what makes the 
 reproducible), and delete-then-reinserts the pinned adversarial ids (90000-range,
 safely above the ~12k dataset). 69 tests green; $0 API spend.
 
+## Task 4 — The harness: *the examiner with the clipboard* (merged, PR #33, closes #9)
+
+**Analogy:** Task 3 built the driving course; this built the **examiner**. It drives all
+25 scenarios, times each one, prices it, and writes down not just pass/fail but *why* at
+every checkpoint. Then it scores the whole exam: how often was the ticket routed to the
+right queue? Did anything that needed a human slip through? Were all five traps caught?
+
+**The first exam happened — and these are the project's first real numbers:**
+
+| Metric | Result |
+|---|---|
+| **Adversarial catch rate** | **5/5 = 100%** — every trap caught by its intended defense |
+| Escalation recall | **1.0** — nothing that needed a human slipped past |
+| Escalation precision | 0.88 |
+| Cost per case | **2.9¢** (caching working); whole suite $0.73 |
+| Latency | p50 31s · p95 41s |
+| Routing accuracy | 29% — *see below; this is a finding, not a failure* |
+
+**Dana's journey:** her VPN ticket ran as case #1. Screened, sorted, briefed, worked — the
+agent checked her entitlements, found priority VPN support isn't on her basic plan, and the
+gate escalated it as an adverse action. Exactly right. The examiner recorded all of it,
+including the 3.6¢ it cost.
+
+**Two findings only a real run could produce:**
+1. **The confidence threshold wasn't the villain.** Of the four cases that *should* have
+   auto-resolved, **zero** were blocked by the confidence bars. Two were blocked by the
+   entitlement-receipt rule, one by the model asking for a human on its own — and one turned
+   out to be **an error in our own answer key** (Dana's ticket was labeled "should
+   auto-resolve," but it contains a denial, so it *can't* be — fixed).
+2. **The 29% routing accuracy is about the dataset, not the agent.** The queue labels
+   overlap so heavily in meaning ("IT Support" vs "Technical Support" vs "Service Outages")
+   that even a perfect classifier scores badly against them. Honest number, reported as-is.
+
+**Also on record:** the very first live attempt **crashed** — a timezone mismatch (the
+database writes naive timestamps, Python wrote timezone-aware ones) that green mocked tests
+could never have caught. Fixed with a regression test. That's the sixth "reality beats
+mocks" save.
+
+**Under the hood:** all metric math (precision/recall, percentiles, calibration buckets) is
+pure functions, unit-tested with fakes — $0 to test. Only the suite *run* costs money, and
+it's a deliberate, counted event with a hard $1 cap. Per-case gate reasons are persisted to
+`eval_results`, which is what made the diagnostic above possible.
+
+## Task 5 — The judge: *the second grader* (merged, PR #36 + #37, closes #10)
+
+**Analogy:** the examiner (#9) is a **scantron machine** — it grades the questions that have
+one right answer. But "is this reply to the customer actually any good?" has no answer key.
+So we hired a **second grader**: an AI with a strict rubric — is every claim in the reply
+*grounded* in the KB articles the agent was given, is it helpful, is the tone right? It's
+allowed to say **"I'm not sure"** rather than guess, and its opinion is stamped throughout
+the code as a *debugging aid, never ground truth* — it never feeds back into the agent's
+decisions.
+
+**First verdicts on 19 drafted replies:** **9 pass · 5 fail · 5 needs_review** — real
+variance, and it used its abstain option instead of forcing calls.
+
+**The bug this task is really about:** the judge was wired to grade only runs that finished
+`completed` — but this system, by design, escalates almost everything. So the judge was
+**dead code that would never have fired once**, and the calibration in Task 6 would have
+opened to an empty file. Only a live run could reveal it. The fix is a genuine conceptual
+correction: **reply quality is independent of the gate's send decision.** An escalated
+ticket's drafted reply is exactly what a human reviewer reads, so it must be judged.
+
+**Under the hood:** pinned `claude-sonnet-4-6` at `temperature=0` (deterministic grading),
+verdict constrained to an **enum** (`pass|fail|needs_review`) because the SDK spike proved an
+unconstrained field lets the model invent labels like "poor". The judge reconstructs *exactly*
+the KB articles the agent saw by reading the retrieve span's recorded doc slugs. Two review
+catches landed too: the harness was silently counting an *uncomputable* cost as $0 (a
+fail-closed violation the moment the judge went live), and `judge_run` would have rendered the
+literal string "None" into its prompt if handed a run with no reply. Both fixed, both tested.
+A **backfill command** means re-judging costs 15¢ instead of re-running the pipeline for $0.75.
+
+## Task 6 — Calibration: *does a human actually agree with the judge?* (tooling merged, PRs #38/#39 — ⏸ awaiting human labels)
+
+**Analogy:** we now have an AI grading the agent's work. But **who grades the grader?** Before
+CI is ever allowed to trust this judge, it has to prove it agrees with a human. So: Cai labels
+the same replies **blind** — he never sees the judge's verdicts — and we compute **Cohen's
+kappa**, the standard measure of agreement between two raters that *corrects for luck* (two
+raters who both say "pass" 90% of the time will agree often by pure chance; kappa strips that
+out).
+
+**The hold-out twist:** the judge is calibrated on a **separate pool of 25 non-golden
+tickets**, not the tickets it's graded on. Same principle as the golden set: the thing you
+measure with must not be the thing you tuned on. Total: **41 blind rows** (19 golden + 22
+pool).
+
+**The deliverable nobody expects:** not just the kappa number, but the **disagreement
+analysis** — every case where the human and the judge diverged, with the judge's reasoning.
+"Here's where my LLM judge disagreed with me, and why" is the artifact almost no new-grad
+portfolio has.
+
+**Under the hood:** hand-rolled kappa (no scipy — it's 15 lines of math). The exported CSV is
+verified by test to contain **no** judge verdict or reasoning — blindness is what makes the
+number honest. And the implementer **overrode the plan's own formula**: the plan said to return
+"perfect agreement" (1.0) in the degenerate case where both raters use only one label — but
+that's mathematically **0/0, undefined**, and reporting 1.0 would have shipped a false claim of
+perfect calibration. It now returns "undefined" with a reason. *The eval layer caught an error
+in its own specification.*
+
 ---
 
-*Next chapters as they land: Task 4 (deterministic harness + calibration table),
-Task 5 (LLM judge), Task 6 (human labels + Cohen's kappa), Task 7 (CI eval gate —
-the Week 2 kill criterion).*
+*Next: Task 7 — the CI eval gate (issue #12), the Week 2 kill criterion: regressions can't
+reach `main`.*

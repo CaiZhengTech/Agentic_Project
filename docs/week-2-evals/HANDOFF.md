@@ -1,153 +1,184 @@
-# Week 2 Execution Handoff — CONTROLLER OPERATING MANUAL (2026-07-12)
+# RESUME HERE — Controller Operating Manual
 
-**Audience: the next controller session (any model). This doc + project CLAUDE.md +
-the Week 2 plan are sufficient to finish this project beginning-to-end.** Supersedes
-`2026-07-12-week1-complete.md` as the resume point.
+**Any new session starts with this file.** Written so a fresh controller (any model) can
+finish this project end-to-end without guessing. Last updated: 2026-07-13.
 
-## Orientation — read in this order
-1. Project `CLAUDE.md` (auto-loads) — locked stack, non-negotiable rules, status.
-2. THIS doc — the execution choreography and current frontier.
-3. `docs/week-2-evals/PLAN.md` — canonical Week 2 tasks
-   (**read the COUNCIL AMENDMENTS section before Tasks 3–7 work — it is binding**).
-4. `.superpowers/sdd/progress.md` — the ledger: every task's commits, findings, budget
-   (git-ignored local scratch; see `.superpowers/sdd/README.md`).
-5. `git log --oneline -5` + `gh pr list` + `gh issue list` — trust these over memory.
+---
 
-## Docs conventions (do not drift from these)
-- `docs/` is grouped BY WEEK. Every week folder has the same four names: `PLAN.md`,
-  `STORY.md` (plain-language explainer), `HANDOFF.md`, `reports/`. Cross-week records
-  live in `docs/00-spec/` (`DESIGN-SPEC.md`, `PITCH.md`). The map is `docs/README.md`.
-- **No dates in filenames** — the folder says when, the name says what, git holds history.
-- **Task reports are committed** to `docs/week-N-<topic>/reports/task-N-<topic>.md`.
-  Dispatch every implementer with that path as its report contract.
-- `.superpowers/sdd/` is git-ignored scratch: the ledger (`progress.md`) plus per-week
-  briefs. Review diffs are regenerable — don't hoard them.
+## ⏸ THE CURRENT BLOCKER (resolve first)
 
-## Current frontier (as of this doc's commit)
-- **Week 2, Tasks 1–2 of 7 DONE and merged** (SDK spike fixture PR #30; prompt
-  caching PR #31). Live-run costs now ~30–50% cheaper.
-- **Task 3 (golden set, issue #8) IN FLIGHT**: implementer subagent on branch
-  `feat/08-golden-set` off `4b1776b`. To check: `git fetch && gh pr list`,
-  `.superpowers/sdd/task-3-report.md` (exists only when it finished), branch existence.
-  If the agent died mid-task: inspect `git status` on its branch, salvage per its
-  report/progress, re-dispatch the remainder — do NOT restart from scratch blindly
-  (Task 9 Week 1 precedent: an agent died AFTER completing work; verify before redoing).
-- Tasks 4–7 pending, strictly in order (deps: 3→4→5→6→7).
-- **Budget: ~$0.13 spent of a HARD $20.** Week 2 envelope ~$10–12. Anthropic spend
-  ONLY when a step explicitly says LIVE; everything else is fixtures/fakes at $0.
+**Week 2 is 6 of 7 tasks done, waiting on ONE human action: Cai must label
+`judge_labels.csv`.**
 
-## The per-task choreography (repeat for Tasks 4, 5, 6, 7)
-1. `git checkout main && git pull`; record BASE = `git rev-parse --short HEAD`.
-2. Extract the brief (write it to `.superpowers/sdd/week-N/briefs/task-N-<topic>.md` —
-   NEVER a bare `task-N-*.md` at the scratch root: Week 2's generic names once overwrote
-   Week 1's and destroyed five reports):
-   `"/c/Users/Wonton Soup/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts/task-brief" docs/week-2-evals/PLAN.md N`
-3. Dispatch ONE implementer subagent (model: sonnet; NEVER two implementers in
-   parallel). The dispatch contains: one line of where the task fits; the brief path
-   ("read this first — your complete requirements"); the binding council amendments
-   that touch the task; env facts (below); report contract
-   (`docs/week-N-<topic>/reports/task-N-<topic>.md` — reports are COMMITTED to the repo,
-   not scratch; final message = status/commits/tests/PR only);
-   branch name `feat/NN-slug` off BASE; "push + open PR, do NOT merge".
-4. On DONE: `scripts/review-package BASE HEAD` (same scripts dir) → dispatch ONE
-   reviewer subagent (sonnet) with brief path, report path, diff path, and the
-   task's binding constraints copied verbatim. Reviewer instructions template:
-   `.../skills/subagent-driven-development/task-reviewer-prompt.md`.
-5. Critical/Important findings → ONE fix subagent (haiku if 1–2 files mechanical,
-   else sonnet) → re-review (SendMessage to the same reviewer). Minor findings →
-   ledger, deferred.
-6. Merge ritual: `gh pr checks N --watch` (must be green — NEVER merge without) →
+- The file is in the repo root: **41 blind rows** (ticket, the KB articles the agent saw, the
+  agent's drafted reply, an empty `human_label` column). The judge's verdicts are deliberately
+  **withheld** — blindness is what makes the calibration honest.
+- Cai reads `results/LABELING-INSTRUCTIONS.md`, fills each row with `pass` / `fail` /
+  `needs_review` (blank = skip), saves as CSV.
+- **When he says he's done, run:**
+  ```bash
+  export TRIAGEDESK_ENV_FILE="C:\Users\Wonton Soup\.secrets\credentials.env"
+  .venv/Scripts/python -m triagedesk.evals.cli label-import judge_labels.csv
+  .venv/Scripts/python -m triagedesk.evals.cli calibrate
+  ```
+  That writes `results/judge-calibration.md`: Cohen's kappa, raw agreement, the confusion
+  matrix, and **the disagreement rows** — the week's highest-value artifact ("where my LLM
+  judge diverged from human judgment, and why").
+- Then: closeout comment on issue **#11**, a STORY chapter, and Task 7.
+
+**Task 7 does NOT depend on the labels** — it can be built while Cai labels.
+
+---
+
+## 🛠 Environment, tools, and plugins (verify before doing anything)
+
+| Thing | Fact |
+|---|---|
+| **Repo** | `C:\Users\Wonton Soup\Downloads\Tech Projects\Agentic_Project` (Windows) |
+| **Python** | 3.13 in `.venv` — always `.venv/Scripts/python -m pytest -q` and `-m ruff check .` |
+| **Secrets** | `export TRIAGEDESK_ENV_FILE="C:\Users\Wonton Soup\.secrets\credentials.env"` in EVERY shell touching settings/DB/API. **Never print secret values.** |
+| **DB** | Neon Postgres + pgvector (dev branch + a test branch for integration tests). |
+| **Embeddings** | Voyage `voyage-3.5-lite`, 1024-dim. **Free tier: 3 req/min, 10K tokens/min** — always BATCH into one `embed([list])` call. Voyage is NOT the Anthropic budget. |
+| **Model** | `claude-sonnet-4-6` everywhere. Judge = same model at `temperature=0`. |
+| **CI** | GitHub Actions, one job named `test` (pytest + ruff + gitleaks). Branch protection needs it green + branch up to date. **Always `gh pr checks N --watch` before merging.** |
+| **GitHub CLI** | `gh` is authenticated; issues and PRs are managed through it. |
+
+**Superpowers plugin** — this project runs on **`superpowers:subagent-driven-development`**.
+The two scripts you'll use constantly:
+
+```bash
+S="/c/Users/Wonton Soup/.claude/plugins/cache/claude-plugins-official/superpowers/6.1.1/skills/subagent-driven-development/scripts"
+"$S/task-brief"     docs/week-2-evals/PLAN.md 7     # extract a task's brief → prints the path
+"$S/review-package" <BASE_SHA> <HEAD_SHA>           # bundle a diff for a reviewer → prints the path
+```
+Reviewer template: `…/subagent-driven-development/task-reviewer-prompt.md`.
+Final whole-branch review template: `…/requesting-code-review/code-reviewer.md`.
+
+**Also available:** the `llm-council` skill (Cai invokes it at week boundaries and before big
+merges — expect it, feed it real numbers); MCP servers for GitHub, Firecrawl (web search), and
+Context7 (library docs). Memory files carry Cai's standing preferences across sessions and load
+automatically.
+
+---
+
+## 🔁 The per-task choreography (repeat for every task)
+
+1. `git checkout main && git pull`; record `BASE=$(git rev-parse --short HEAD)`.
+2. Extract the brief with `task-brief`. **Never archive briefs** — regenerate each time so
+   they always reflect the current (possibly amended) plan.
+3. Dispatch **ONE** implementer subagent (sonnet). **Never two implementers at once** — they
+   share one working tree and collide on branch switches (this has bitten twice). The dispatch
+   carries: one line on where the task fits; the brief path ("read this first — your complete
+   requirements"); any **binding council amendments** touching the task; the environment facts
+   above; the branch name (`feat/NN-slug`, off BASE); the report path
+   (`docs/week-N-<topic>/reports/task-N-<topic>.md` — **reports are committed to the repo**);
+   and "push + open a PR, do NOT merge."
+4. On DONE → `review-package BASE HEAD` → dispatch **ONE reviewer** (sonnet) with the brief
+   path, report path, diff path, and the task's binding constraints **copied verbatim**.
+5. Critical/Important findings → **ONE** fix subagent (haiku for 1–2-file mechanical fixes,
+   else sonnet) → re-review by messaging the same reviewer. Minor findings → the ledger.
+6. Merge ritual: `gh pr checks N --watch` (must be green — **never merge without**) →
    `gh pr merge N --squash --delete-branch` → `git checkout main && git pull`.
-7. Bookkeeping IN THE SAME BREATH: ledger entry (commits, findings, budget delta);
-   TaskUpdate; if the task closes a GitHub issue → closeout comment (see Standing
-   Preferences); update this doc's frontier section at milestones.
+7. Bookkeeping in the same breath: ledger entry, TaskUpdate, and the three standing
+   deliverables below.
 
-## Environment facts every subagent dispatch must carry
-- `export TRIAGEDESK_ENV_FILE="C:\Users\Wonton Soup\.secrets\credentials.env"` before
-  anything touching settings/DB. NEVER print secret values or connection strings.
-- Venv: `.venv/Scripts/python -m pytest -q` and `-m ruff check .` (Windows).
-- Voyage embeddings: free tier, 3 req/min + 10K tokens/min — BATCH into one
-  `embed([list])` call; pace with sleeps; Voyage is NOT Anthropic budget.
-- Unit tests: fakes/fixtures ONLY ($0). Committed fixtures:
-  `tests/fixtures/sdk_tool_use_shapes.json` (tool_use),
-  `tests/fixtures/sdk_structured_output_caching.json` (judge structured-output +
-  caching; includes the "plain-str verdict returned 'poor'" trap — judge schema MUST
-  use `Literal["pass","fail","needs_review"]`).
-- Commits end: `Co-Authored-By: <model attribution per session>`; PR bodies end with
-  the Claude Code footer; `Closes #N` only when the issue is fully done.
+**If an agent dies mid-task:** check `git status`, its branch, and its report file BEFORE
+re-dispatching. Twice now an agent has died *after* completing its work but before reporting.
+Verify, then resume — never blindly restart.
 
-## Live-run rules (the money)
-- Every live step is marked `⚠️ LIVE ($…)` in the plan. Controller runs live steps
-  itself OR authorizes an implementer with an explicit call cap and a
-  BLOCKED-with-evidence tripwire (Week 1 used ~8 runs max).
-- Full eval-suite live runs: ~$1–1.3 each (post-caching). **≤4 during Week 2
-  development.** The FIRST harness live run doubles as the entitlement-veto
-  diagnostic (read per-case gate reasons before authorizing more runs).
-- CI eval gate (Task 7): trigger = `workflow_dispatch` + push filtered to
-  eval-relevant paths ONLY (council amendment #5 — never every-merge; Weeks 3–4
-  merges would burn $1+/each). $1 in-workflow hard cap stays.
-- Track cumulative spend in the ledger after EVERY API-touching step. Quality beats
-  frugality within the envelope, but never spend reflexively (memory: api-budget-hard-cap).
+---
 
-## Binding decisions already made (do not relitigate)
-- Council amendments in the plan (hold-out rule; expected outcomes = IDEAL behavior;
-  Task 7 trigger; kappa disagreement mini-appendix; Haiku cross-judge = stretch only).
-- Controller refinement (recorded, applies to Task 3 review): 3–5 golden cases must
-  have ideal-outcome = auto-resolve even though they'll FAIL today — an honest red
-  beats green-by-construction. Verify the seeded set has this split when reviewing
-  Task 3.
-- Diagnostic verdict: margin formula CORRECT (hand-verified); 0.02 threshold
-  structurally near-unreachable (2/20 ground-truth tickets clear it; median −0.0095).
-  Threshold re-derivation happens AFTER harness data exists, from held-out tickets +
-  calibration table — never from the golden 25.
-- Model: `claude-sonnet-4-6` everywhere; judge = same model at temperature=0.
-  Reviewer rubric: violating a written non-negotiable rule = Critical by definition.
-- Gate/act invariants (see CLAUDE.md): adverse-action first; entitlement evidence
-  required for auto-resolve; signals never include LLM self-reported confidence.
+## 📣 The three standing deliverables (Cai's explicit, non-negotiable ask)
 
-## Task-specific notes for the remaining work
-- **Task 4 (harness, #9):** metrics math = pure functions, unit-tested with fakes.
-  Live checkpoint = ONE full 25-case run; capture per-case gate reasons; do NOT
-  commit a CI baseline from this run (it's diagnostic).
-- **Task 5 (judge, #10):** schema Literal verdict (see fixture); temperature=0
-  passthrough in structured_call was pre-designed in the plan (optional param, only
-  sent when set); judge explanations are NEVER ground truth.
-- **Task 6 (kappa, #11):** ⚠️ HUMAN CHECKPOINT — Cai personally labels 40–50 rows
-  via the CSV export; STOP and hand him the file with clear instructions; resume on
-  his signal. Then kappa + the disagreement mini-appendix (3–5 divergence cases,
-  written up — case-study gold).
-- **Task 7 (gate, #12):** KILL CRITERION at end of Week 2: eval gate green or the
-  Week-3 console is cut to one read-only page. This rule is not negotiable
-  mid-project. Baseline file committed only after threshold re-derivation.
-- **End of Week 2:** STOP. Hand Cai a state summary for his checkpoint before
-  ANY Week 3 work. Update handoff doc + CLAUDE.md + PITCH.md numbers table.
+After **every** completed task:
+1. **A plain-language explanation in chat** — what was done and why, no jargon walls.
+2. **A short analogy-driven comment on the GitHub issue** (~1 min read): why it matters, how it
+   builds on the previous issue, what's next. Written for a non-technical reader.
+3. **A chapter in that week's `STORY.md`** — three layers: **analogy** → **Dana's journey** →
+   **"Under the hood"** (semi-technical, real component names, no code). Roll interview
+   one-liners into `docs/00-spec/PITCH.md`.
 
-## Standing preferences (Cai — honor ALL of these, every task)
-1. **Three deliverables after EVERY completed task:** (a) plain-language explanation
-   in chat; (b) analogy-driven comment on the GitHub issue (SHORT — ~1 min read —
-   why it matters, builds-on-previous, link to explainer); (c) explainer md in
-   that week's `STORY.md` with THREE layers: analogy → Dana's-journey
-   walkthrough → "Under the hood" (semi-technical, real component names, no code).
-   Include ready-made interview one-liners. (Memory: explanation-format-preference.)
-2. **PITCH.md** (`docs/00-spec/PITCH.md`) updated at every milestone —
-   30-second story, per-feature one-liners, numbers table.
-3. **Closeout comment on every issue at close** (built / how-it-went / decisions /
-   next). All of #1–#7 have them; keep the streak.
-4. **Handoff doc updated at every stopping point**; CLAUDE.md Status points at the
-   latest one; ledger always current.
-5. **Dana Fuentes (customer-3, VPN ticket 12027 / dedicated-IP 12039)** is the
-   recurring worked example in ALL explanations — continuity is the point.
-6. Cai runs (or asks for) an **llm-council checkpoint** at week boundaries and
-   before big merges — expect it, don't fight it; feed it real numbers.
-7. Git: branch per issue, PR, checks-gated squash-merge, branch deleted. Docs may
-   push to main directly (admin bypass is logged).
+Dana Fuentes (customer-3; VPN ticket 12027, dedicated-IP variant 12039) is the **recurring
+worked example** everywhere. Continuity is the point.
 
-## Week 3–4 preview (so the end-to-end path is visible)
-- Wk3 (issues #13–#16): console run list/detail → review queue → deploy
-  (Railway+Neon+Vercel, NO Docker) → demo protection (seeded pool, rate limit,
-  visible spend-cap pause). Descope ladder if overrunning: smoke test → JSON logs →
-  per-IP rate limit (daily spend cap NEVER cut).
-- Wk4 (issues #17–#18): demo video → case study + `results/` + final README
-  (adversarial catch rate = headline number; deliberate cuts get "what I'd add in
-  production" paragraphs; the fail-closed margin finding is the approved opening
-  narrative).
+---
+
+## 💰 Budget — HARD CAP $20, no top-ups (~$3.05 spent)
+
+- Unit tests are **$0** — fixtures and fakes only, always.
+- Live steps are deliberate, counted events. A full eval suite run ≈ **$0.75–1.30**;
+  **≤4 during Week 2** (2 used). The judge-backfill command (15¢) exists so you never re-run
+  the pipeline just to re-judge.
+- Update the budget table in `.superpowers/sdd/progress.md` after every API-touching step.
+- **Task 7's CI gate trigger = `workflow_dispatch` + a paths filter (eval-relevant code only),
+  NOT every merge.** At $1+/run across ~10–15 merges in Weeks 3–4, an every-merge trigger would
+  eat the entire remaining budget. Council amendment; the $1 in-workflow cap stays.
+
+---
+
+## 🚫 Binding decisions — do not relitigate
+
+- **Hold-out rule:** the golden set MEASURES, never TRAINS. Thresholds are re-derived from
+  held-out tickets + the calibration table — *never* tuned on the 25. The judge's calibration
+  pool is likewise non-golden tickets.
+- **Expected outcomes encode IDEAL behavior**, not current-config behavior. Three golden cases
+  are labeled ideal-auto-resolve even though today's thresholds fail them — an honest red beats
+  green-by-construction.
+- **SDK-reality rule:** never code against an API surface you haven't observed live. Commit the
+  observed response as a fixture; build mocks only from it. (It has paid for itself ~6 times —
+  see the incident list in the ledger.)
+- **Gate invariants:** adverse-action check first; positive `check_entitlement` evidence
+  required before any auto-resolve; signals never include LLM self-reported confidence.
+- **Reviewer rubric:** violating a written non-negotiable design rule = **Critical by definition**.
+- **Docs:** grouped by week; no dates in filenames; reports committed. One fact, one home —
+  never restate, link. See `docs/README.md`.
+
+---
+
+## ✅ Week 2 status
+
+| Task | Issue | State |
+|---|---|---|
+| 1 SDK spike → committed fixture | — | ✅ PR #30 |
+| 2 Prompt caching | — | ✅ PR #31 |
+| 3 Golden set (25 cases) | #8 | ✅ closed, PR #32 |
+| 4 Eval harness + calibration table | #9 | ✅ closed, PR #33 (+#34, #35) |
+| 5 LLM judge | #10 | ✅ closed, PR #36 (+#37) |
+| 6 Kappa tooling + calibration pool | #11 | ⏸ **awaiting Cai's labels** — PRs #38/#39 |
+| 7 CI eval gate — **KILL CRITERION** | #12 | ⬜ not started |
+
+**Live numbers:** adversarial catch **5/5 (100%)** · escalation recall **1.0** · precision 0.88
+· ~**2.9¢/run** · p50 31–34s. Judge on the golden 19: 9 pass / 5 fail / 5 needs_review.
+
+**Gate diagnostic (important):** the margin formula is hand-verified correct, but the 0.02
+threshold is structurally near-unreachable (only 2/20 ground-truth tickets clear it). **Zero**
+ideal-route cases were blocked by thresholds — the binding gates are the entitlement-receipt
+rule and model conservatism (`agent_requested_human` = 14/25). **Do not hand-tune thresholds;**
+re-derive from held-out data + the calibration table.
+
+---
+
+## ➡️ Next steps, in order
+
+1. **Task 7 — CI eval gate (issue #12).** Brief: `task-brief docs/week-2-evals/PLAN.md 7`.
+   Trigger = `workflow_dispatch` + eval-paths filter. Deterministic metrics gated exactly
+   against a committed baseline; judge metrics with a tolerance band. **The baseline is
+   committed only AFTER threshold re-derivation** — the first run's numbers are diagnostic, not
+   a target (baseline-from-first-green-run is circular reasoning).
+2. **When Cai's labels land** → `label-import` + `calibrate` → kappa + disagreement appendix →
+   closeout #11.
+3. **KILL CRITERION (end of Week 2):** if the eval gate is not green, the Week-3 console is cut
+   to a single read-only page and the hours go to pipeline + evals. Not negotiable mid-project.
+4. **STOP.** Hand Cai a state summary for his end-of-Week-2 checkpoint (he runs llm-council).
+   No Week 3 work before that.
+
+## 🔭 Weeks 3–4 (so the whole path is visible)
+
+- **Wk3 (issues #13–#16):** console run list/detail → review queue → deploy (Railway + Neon +
+  Vercel, **no Docker**) → demo protection (seeded ticket pool only, per-IP rate limit, a
+  *visible* spend-cap pause). Descope ladder if overrunning: cut the smoke test → cut JSON logs
+  → cut the rate limit. **The daily spend cap is never cut.**
+- **Wk4 (issues #17–#18):** demo video → case study + `results/` + final README. The
+  **adversarial catch rate is the standalone headline number**. Every deliberate cut gets a
+  "what I'd add in production" paragraph. The fail-closed / all-escalate finding is the approved
+  opening narrative.

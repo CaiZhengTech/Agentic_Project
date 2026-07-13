@@ -4,7 +4,7 @@
 milestone. Everything here is true and defensible — every claim traces to a commit,
 a test, or a logged run.*
 
-**Last updated:** 2026-07-12 (end of Week 1 + QA hardening)
+**Last updated:** 2026-07-13 (Week 2: evals — 6 of 7 tasks done)
 
 ---
 
@@ -105,20 +105,24 @@ budget. Each cut is a talking point, not a gap:
 
 ---
 
-## The numbers (as of end of Week 1)
+## The numbers (live, as of Week 2)
 
 | Metric | Value |
 |---|---|
-| Real tickets in the database | 11,922 (public dataset, English) |
+| **Adversarial catch rate** | **5 / 5 = 100%** — every trap caught by its intended defense layer |
+| **Escalation recall** | **1.0** — nothing needing a human slipped through (precision 0.88) |
+| Real tickets in the database | 11,922 (public Kaggle dataset, English) |
+| Golden evaluation set | 25 cases (20 stratified real + 5 authored adversarial) |
+| Judged replies awaiting human calibration | 41 (19 golden + 22 held-out pool) |
 | Knowledge-base articles authored + embedded | 15 |
 | Pipeline stages, all live-verified end-to-end | 5 |
-| Cost per full pipeline run | ~3–7 cents, hard-capped at 10¢ |
-| Test suite | 57 tests + lint + secret-scan, gating every merge |
-| Total API spend for all of Week 1 incl. QA | ~$0.11 |
-| Adverse-action rule live verification | 2/2 correctly escalated to human |
+| Cost per full pipeline run | **~2.9¢** with prompt caching (hard-capped at 10¢) |
+| Latency | p50 31s · p95 41s |
+| Test suite | 140+ tests + lint + secret-scan, gating every merge |
+| **Total API spend, entire project to date** | **~$3.05** against a hard $20 budget |
 
-*(Week 2 will add: golden-set size, judge-vs-human Cohen's kappa, adversarial catch
-rate — the headline number.)*
+*(Still to land: judge-vs-human Cohen's kappa + the disagreement analysis, and the CI eval
+gate — the Week-2 kill criterion.)*
 
 ---
 
