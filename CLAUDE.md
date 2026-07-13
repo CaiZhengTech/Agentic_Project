@@ -5,14 +5,17 @@ Northeast US (NYC/Boston) new-grad SWE roles, fall 2026 cycle. The differentiato
 agent — it's the eval/observability/trust discipline around it (market research: eval design
 is the #1 hiring signal; plain RAG demos are a yellow flag).
 
-## Status (updated 2026-07-12)
+## Status (updated 2026-07-12, evening)
 
-**WEEK 1 COMPLETE.** All 9 tasks merged (`main` = `a230052`); issues #1–#7 closed with
-closeout comments. E2E kill criterion met: two live runs through all 5 stages, both
-correctly `escalated/adverse_action`. ~$0.11 of the $20 budget spent.
-**⛔ STOPPED at the Week 2 gate — Cai reviews the checkpoint before any Week 2 work.**
-**→ RESUME HERE: read `docs/sessions/2026-07-12-week1-complete.md`** (council verdict,
-Week 2 mandate, ordered next steps). Per-task detail: `.superpowers/sdd/progress.md`.
+**WEEK 2 IN EXECUTION.** Week 1 fully merged + QA'd (issues #1–#7 closed). Week 2 plan
+(`docs/superpowers/plans/2026-07-12-week2-evals.md`) council-reviewed with BINDING
+amendments; Tasks 1–2 of 7 merged (SDK fixture PR #30, prompt caching PR #31);
+Task 3 (golden set, #8) in flight on `feat/08-golden-set`. Budget ~$0.13 of $20.
+Key diagnostic finding on record: margin formula correct, 0.02 threshold structurally
+near-unreachable (2/20 ground-truth tickets) — re-derive from held-out data ONLY.
+**→ RESUME HERE: read `docs/sessions/2026-07-12-week2-execution-handoff.md`** — the
+controller operating manual (per-task choreography, live-run budget rules, standing
+preferences, Wk3–4 path). Per-task detail: `.superpowers/sdd/progress.md`.
 
 - **QA hardening DONE (PR #29 → `627f778`):** the council-mandated gate fix landed —
   gate now structurally requires `check_entitlement` execution evidence before any
