@@ -10,6 +10,7 @@ mode the Week-2 checkpoint run uses — works without it.
 """
 
 import uuid
+from datetime import UTC
 
 from triagedesk.evals.metrics import CaseResult, summarize
 from triagedesk.models import EvalCase, EvalResult, Run, Span
@@ -32,9 +33,14 @@ def _classify_queue(session, run_id) -> str | None:
     return (span.attributes or {}).get("triage.classify.queue")
 
 
+def _as_utc(dt):
+    """Normalize a datetime to UTC. Naive datetimes are assumed to be UTC."""
+    return dt.replace(tzinfo=UTC) if dt.tzinfo is None else dt
+
+
 def _latency_ms(run: Run) -> float:
     if run.finished_at and run.created_at:
-        return (run.finished_at - run.created_at).total_seconds() * 1000.0
+        return (_as_utc(run.finished_at) - _as_utc(run.created_at)).total_seconds() * 1000.0
     return 0.0
 
 
