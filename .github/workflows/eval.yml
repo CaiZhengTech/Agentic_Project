@@ -8,6 +8,8 @@ on:
       - "kb/**"
       - "results/eval-baseline.json"
       - ".github/workflows/eval.yml"
+      - "alembic/**"
+      - "requirements.txt"
 concurrency:
   group: eval-${{ github.ref }}
   cancel-in-progress: false
