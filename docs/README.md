@@ -17,12 +17,14 @@ the week that produced it. This page tells you where to look for what.
 | **The task-by-task plan being executed** | The current week's `PLAN.md` |
 | **Engineering evidence** — what each task built, TDD proof, findings | Any week's `reports/` |
 | **What was decided and why** (narrative, per issue) | [GitHub issue closeouts](https://github.com/CaiZhengTech/Agentic_Project/issues?q=is%3Aissue+is%3Aclosed) |
+| **What happened in each work session** (chronological) | [`SESSION-LOG.md`](SESSION-LOG.md) |
 
 ## 📁 The layout
 
 ```
 docs/
   README.md              ← you are here
+  SESSION-LOG.md         what happened each session (newest first)
   00-spec/               cross-week: the design record, the schema, the pitch
     DESIGN-SPEC.md         what TriageDesk is, the locked stack, the rules
     DATA-SCHEMA.md         ★ every table + column, the gotchas, example queries

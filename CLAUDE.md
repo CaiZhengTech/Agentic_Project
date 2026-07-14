@@ -11,10 +11,10 @@ is the #1 hiring signal; plain RAG demos are a yellow flag).
 41 blind rows await his labels in `judge_labels.csv` (see `results/LABELING-INSTRUCTIONS.md`);
 then kappa + disagreement report, then Task 7 (CI eval gate, issue #12 = the Wk2
 kill-criterion checkpoint). Issues #8, #9, #10 closed. Budget ~$3.05 of $20.
-**→ RESUME HERE: read `docs/README.md`** (the documentation map), then
-`docs/week-2-evals/HANDOFF.md` — the controller operating manual (per-task choreography,
-live-run budget rules, standing preferences, Wk3–4 path). Raw ledger:
-`.superpowers/sdd/progress.md` (git-ignored, local).
+**→ RESUME HERE:** `docs/week-2-evals/HANDOFF.md` — the controller operating manual
+(blocker first, environment + tooling, per-task choreography, budget rules, binding
+decisions). For what happened last session: `docs/SESSION-LOG.md`. The map: `docs/README.md`.
+Raw ledger: `.superpowers/sdd/progress.md` (git-ignored, local).
 
 - **Live numbers on record:** adversarial catch rate **5/5 (100%)**, escalation recall
   **1.0**, precision 0.88, ~**2.9¢/run** (prompt caching on), p50 31–34s. Routing accuracy
