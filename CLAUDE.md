@@ -7,14 +7,16 @@ is the #1 hiring signal; plain RAG demos are a yellow flag).
 
 ## Status (updated 2026-07-17)
 
-**WEEK 3 IN PROGRESS (2026-07-17): #13 CLOSED** (runs API + console run list/detail,
-PRs #50/#51); **#14 half done** (review-queue API + `review_decisions` merged, PR #52 —
-the queue PAGE is the next action; session stopped there by request). Then Tasks 5–7:
-deploy-prep → live deploy (needs Cai's Railway/Vercel accounts) → demo protection, per
-`docs/week-3-console/PLAN.md` (its gate-cost rule + descope ladder are binding). Budget
-~$8.6 of $20 (⚠️ eval-path merges auto-trigger the ~$0.90 gate — batch them, cancel
-superseded queued runs; `console/**`/docs/tests don't trigger). **VERIFY at session
-start: gate run 29555275667 green + record its cost.**
+**WEEK 3 IN PROGRESS (2026-07-17 evening): #13 + #14 CLOSED — the console is
+feature-complete** (run list · run detail · review queue; PRs #50/#51/#52/#53). **Next
+action: Task 5 (deploy-prep code — CORS + JSON logs, #15), BATCHED with Task 7 (demo
+protection, #16)** so their `triagedesk/**` merges share ONE ~$0.90 eval-gate run; then
+Task 6 (live deploy Railway+Neon+Vercel — needs Cai's accounts), per
+`docs/week-3-console/PLAN.md` (its gate-cost rule + descope ladder are binding). Task 5
+also unblocks the console's cross-origin POST (a known, deferred CORS gap from Task 4).
+Budget ~$8.6 of $20 (⚠️ eval-path merges auto-trigger the ~$0.90 gate — batch them,
+cancel superseded queued runs; `console/**`/docs/tests don't trigger). Gate run
+29555275667 verified green, $0.887 recorded.
 Week 2.5 record (quote kappas carefully): judge v2 improved invariantly (0.279→0.418 r1,
 0.038→0.133 r2) but Cai's self-agreement is kappa 0.212 — single-rater labels are the
 bottleneck; official v2 kappa 0.133 is noise-capped; next step = second rater (#19).

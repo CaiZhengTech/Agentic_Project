@@ -92,5 +92,46 @@ against the real test database, review clean on the first pass.
 
 ---
 
-*Next: Task 4 — the queue page itself, so the inbox has a screen. Then (next session):
-deploy + demo protection.*
+## Task 4 — The doctor sits down at the desk (✅ merged, PR #53, closes #14)
+
+**Analogy:** Task 3 built the doctor's inbox — the table where flagged cases land and the
+lock on who may sign them off. But an inbox with no screen is just a database. This task
+built the desk the doctor actually sits at: a web page that lists every waiting case as a
+card — the patient's complaint (ticket subject), why the nurse flagged it (escalation
+reason), the reply the AI drafted, and the nurse's chart-note (the agent's reasoning,
+captioned so no one mistakes it for evidence). The doctor types a note, clicks approve or
+reject, and the card disappears — signed, permanent.
+
+**Dana's journey:** her dedicated-IP denial has waited in the queue since Week 1. Now it's
+a card on the review page: subject, "escalated — adverse action", the draft reply, and the
+agent's post-hoc rationale under the exact caption the design rules demand. The operator
+types "correctly identified plan limitation", clicks **Approve** — the page sends the
+verdict with the operator token, the server records it, and the card vanishes from the
+queue (the count ticks down by one). Try to approve without a note and the page refuses
+before it ever touches the network. Type the wrong token and it says "invalid operator
+token" and leaves the queue exactly as it was — nothing lost, nothing guessed.
+
+**Under the hood:** a thin Next.js page — one server component that fetches the queue, one
+client component that owns the operator-token field (kept in the browser's `sessionStorage`,
+never sent anywhere but the `X-Admin-Token` header), and one row component per case with
+its note field and buttons. The careful bit is honest error handling: instead of throwing
+on a bad response, the fetch helper returns a *labeled* result — `ok`, `invalid_token`,
+`already_reviewed`, `not_configured` — so the page reacts precisely to each of the four
+outcomes Task 3's API defines (201 success, 401 wrong token, 409 already-decided → refresh
+the list, 503 no-token-configured → say so plainly). Every one of those five paths was
+verified through a *real browser*, not a curl script: approve (queue 223→222), reject
+(→221), wrong-token (401, queue untouched), unset-token (503), and a 409 triggered by
+deciding a row out-of-band and then submitting it (→ automatic refresh). Zero new
+dependencies; the page is plain `fetch` and the same CSS variables as the rest of the
+console. **One honest, correctly-scoped gap:** because the console and the API are
+different origins, the browser sends a CORS "preflight" before the POST — and the real app
+doesn't answer it yet, because CORS is Task 5's job. It's flagged in the report and the PR,
+not worked around. The review's one Minor finding (a dead CSS class that highlighted
+nothing) was fixed in the same PR. **Issue #14 is now complete — the promise the pipeline
+has been making since Week 1, that a human reviews every denial, finally has a human-usable
+screen.**
+
+---
+
+*Next (next session): Task 5 — deploy prep (CORS + JSON logs), then the live deploy
+(Railway + Neon + Vercel), then demo abuse protection (#16).*

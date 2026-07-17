@@ -9,6 +9,50 @@ read the current week's `HANDOFF.md`. For "what did task N build", read that wee
 
 ---
 
+## Session — 2026-07-17 (evening) · Wk3 Task 4 — the review-queue PAGE; #14 CLOSED; PITCH restructured for interviews
+
+**Where it started:** resume at Wk3 Task 4 (the review-queue page); Cai flagged an upcoming
+interview and asked for strong docs + a clean, legible issue log + a well-formatted PITCH.
+**Where it ended:** **#14 CLOSED — the console is feature-complete** (run list · run detail ·
+review queue). Next: Task 5 (deploy-prep code), batched with Task 7. Resume:
+`week-3-console/HANDOFF.md`.
+
+### What happened
+1. **Session-start verify:** gate run **29555275667 confirmed GREEN** (PR #52's API wave,
+   11m18s); recorded its actual cost **$0.887** ($0.726 base + $0.161 judge) in the ledger.
+2. **Task 4 — the review-queue page** (PR #53, `4f51143`): a thin Next.js page — server
+   component fetches `GET /api/review-queue`; a client component owns the operator-token
+   field (`sessionStorage` → `X-Admin-Token`); one row component per case with a required
+   note + approve/reject. The fetch helper returns a *labeled* result so the UI reacts
+   precisely to Task 3's four statuses (201/401/409/503). Implementer verified all five
+   paths through a **real browser** (agent-browser) against ~223 dev-DB escalated runs.
+   Review APPROVE-WITH-MINORS; the one Minor (a dead `row-escalated` CSS class on a
+   `<section>`) was fixed in-PR with a `.review-card` border. Console-only ⇒ **$0 gate**.
+   **#14 closed** (both halves done).
+3. **Honest, correctly-scoped gap recorded:** the console→API cross-origin POST needs a
+   CORS preflight the real app doesn't answer yet — that's **Task 5's** job (CORSMiddleware),
+   flagged in the report/PR, not worked around.
+4. **PITCH restructured for interview use** (`cf3294f`, direct to main): a "how to use this
+   file" jump table, the one-liners grouped into scannable themed sections (every quote
+   preserved verbatim), two new Week-3 one-liners (the ops console + the review queue), and
+   refreshed numbers (202 tests, ~$8.6 spend). Standing STORY chapter + #14 closeout posted.
+5. **Process note (own it):** the first Task-4 subagent shared the working tree; a docs
+   `git commit` for the PITCH landed on the feature branch by mistake. Reconciled cleanly —
+   rebased the stray commit off the branch, cherry-picked PITCH onto main, force-pushed so
+   PR #53 showed only console files. Lesson for Tasks 5–7: isolate implementers in a
+   worktree, or do zero git writes while a background agent holds the shared tree.
+
+### Spend
+**$0 this session** (Task 4 console-only; the $0.887 gate was last session's run, now just
+finalized in the ledger). Total ≈ **$8.6 of $20**.
+
+### Open
+- **Task 5 (deploy-prep: CORS + JSON logs)** is the next action — dispatch recipe at the top
+  of `week-3-console/HANDOFF.md`. **Batch Task 5 + Task 7 API merges** (one gate run). Then
+  Task 6 (live deploy — needs Cai's Railway/Vercel accounts).
+
+---
+
 ## Session — 2026-07-17 (later) · Week 3 begins — plan + runs API + console pages + review-queue API; stopped before Task 4 by request
 
 **Where it started:** Week 3 unblocked (#45 closed earlier the same day).

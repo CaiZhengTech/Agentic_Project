@@ -1,7 +1,8 @@
 # RESUME HERE — Week 3 state + how to continue
 
-**Any new session starts with this file.** Last updated: 2026-07-17 (session ended by
-Cai's request after Wk3 Task 3; Task 4 deliberately NOT started).
+**Any new session starts with this file.** Last updated: 2026-07-17 (later — **Wk3 Task 4
+done, #14 CLOSED**; the console is feature-complete [run list · run detail · review queue].
+Next action: Task 5 [deploy-prep code], batched with Task 7 for one gate run).
 
 > The **operating manual** (environment facts, per-task choreography, budget rules,
 > binding decisions, the three standing deliverables) lives in
@@ -10,47 +11,32 @@ Cai's request after Wk3 Task 3; Task 4 deliberately NOT started).
 
 ---
 
-## ▶️ NEXT ACTION: dispatch Task 4 — the console review-queue page (issue #14, UI half)
+## ▶️ NEXT ACTION: Task 5 — deploy-prep code (CORS + JSON logs, issue #15, code half)
 
-Everything it needs is ready and merged:
+The console is done; deploy is the next arc. **Task 5 touches `triagedesk/**` ⇒ it will
+trigger the ~$0.90 eval gate. Task 7 (demo protection) ALSO touches `triagedesk/**` —
+BATCH them: build both, review both, merge back-to-back, cancel superseded queued
+`eval-gate` runs so ONE gate run bills for the wave.** Task 6 (live deploy, needs Cai's
+Railway/Vercel accounts) runs last, after 5+7 are on main. Recipe:
 
 1. `git checkout main && git pull` — record BASE.
-2. Regenerate the brief: `"$S/task-brief" docs/week-3-console/PLAN.md 4` (S = the
-   subagent-driven-development scripts dir; see the operating manual).
-3. Dispatch ONE implementer (sonnet), branch `feat/14-review-queue-page`. Context the
-   brief can't know, carry it in the dispatch:
-   - Task 3's API is merged: `GET /api/review-queue` → `{items: [run-summary fields +
-     internal_rationale + final_reply], total}` (oldest first); `POST /api/review/{run_id}`
-     body `{"decision": "approve"|"reject", "note": str}` + header `X-Admin-Token` →
-     201 / **401 wrong token / 503 token unset (fail closed) / 409 already reviewed /
-     404 / 422**.
-   - Console conventions from Tasks 2: plain CSS via `globals.css` variables,
-     `lib/api.ts` typed fetch helpers (`NEXT_PUBLIC_API_URL`, localhost:8000 default),
-     server components + one narrow client component where interaction demands it,
-     root `error.tsx` already exists. NO new dependencies.
-   - Local API for manual verification: `export TRIAGEDESK_ENV_FILE=…` then
-     `.venv/Scripts/python -m uvicorn triagedesk.app:app --port 8000`; set `ADMIN_TOKEN`
-     in the env for the happy path AND unset it once to see the 503. Dev DB has ~198
-     escalated runs to fill the queue. **A row that was decided must disappear** —
-     verify live, and note the DB write it creates is permanent (fine — it's the dev DB
-     and the table exists there via the merged migration).
-   - Review-queue POST must only ever be issued from rows the queue returned (the API
-     doesn't re-check run state — Task 3 review minor, in the ledger).
-4. Review (reviewer gets the brief + report + review-package diff + the same binding
-   constraints), fix loop if needed, merge — **console/** only ⇒ NO eval-gate cost.
-5. Deliverables in the same breath (Cai's standing rule, re-confirmed 2026-07-17: after
-   EVERY task, immediately — never batched): chat explanation · analogy comment on #14
-   → **then CLOSE #14** (both halves done) · STORY.md chapter · ledger row + minors.
+2. `"$S/task-brief" docs/week-3-console/PLAN.md 5` (and `... 7` when you get there).
+3. Dispatch ONE implementer (sonnet), branch `feat/15-deploy-prep`. Task 5 adds
+   `CORSMiddleware` (origins from `settings.cors_origins`, comma-separated, **fail closed:
+   empty = no cross-origin**), a stdlib JSON log formatter (`triagedesk/logging_setup.py`,
+   applied when `settings.log_json`), and the two new settings in `.env.example`. Full
+   spec: PLAN.md "### Task 5". **This is what unblocks the review-queue page's cross-origin
+   POST** — the console→API preflight that Task 4 documented as a known gap.
+4. Review → fix loop → hold the merge to batch with Task 7 (see the gate-cost rule above).
+5. Per-task deliverables each time (chat explanation · analogy comment on #15/#16 ·
+   STORY.md chapter · ledger row + minors).
 
 ## ✅ Verify at session start (30 seconds)
 
-- Eval-gate run **29555275667** (triggered by PR #52's merge — the session's one billed
-  API-wave run, expected ~$0.90) was `in_progress` when the session ended. Confirm it
-  went **green**: `gh run view 29555275667`. If red, STOP and diagnose before Task 4
-  (a red here means the review-queue migration or API change moved a guarded number —
-  unlikely but the gate exists for exactly this). Then record its actual cost (from the
-  run log's `cost_total` + `judge_cost_total`) in the ledger budget table (placeholder
-  row says "~$0.90 pending").
+- **Gate run 29555275667 confirmed GREEN** (PR #52's API-wave run; 11m18s), actual cost
+  **$0.887** ($0.726 base + $0.161 judge) — recorded in the ledger. No pending gate at
+  session start now. The Task-4 merge (PR #53) was **console-only ⇒ triggered no gate**
+  ($0). Next billed gate = the Task 5+7 API wave (batch it).
 
 ## Week 3 state
 
@@ -59,8 +45,8 @@ Everything it needs is ready and merged:
 | 1 Runs read API (list + detail) | #13 | ✅ merged `360b1d0` (PR #50), review clean |
 | 2 Console scaffold + run list/detail | #13 | ✅ merged `9f41aaa` (PR #51), review clean (1 Important fixed: error boundary) — **#13 CLOSED** |
 | 3 review_decisions + queue API + admin token | #14 | ✅ merged `f760367` (PR #52), review clean |
-| 4 Console review-queue page | #14 | ▶️ **NEXT** (brief regenerates from PLAN.md Task 4) |
-| 5 Deploy-prep: CORS + JSON logs | #15 | ⬜ after Task 4 |
+| 4 Console review-queue page | #14 | ✅ merged `4f51143` (PR #53), review APPROVE-WITH-MINORS (1 dead-CSS Minor fixed in-PR) — **#14 CLOSED** |
+| 5 Deploy-prep: CORS + JSON logs | #15 | ▶️ **NEXT** (batch its merge with Task 7) |
 | 6 Live deploy Railway+Neon+Vercel + smoke — **controller + Cai** (needs his accounts) | #15 | ⬜ last |
 | 7 Demo protection (pool, rate limit, visible spend-cap pause) + smoke script | #16 | ⬜ after 5 |
 
@@ -73,10 +59,9 @@ rate limit. The daily spend cap is NEVER cut.
 
 ## Budget
 
-≈ **$8.6 of $20** after this session (see the ledger's table; the pending item is run
-29555275667's actual cost). Week 3's remaining live spend: Task 6's smoke run (~3¢) +
-Task 5/7 API-wave gate run (~$0.90) + demo-protection gate run if merged separately
-(avoid — batch 5+7).
+≈ **$8.6 of $20** (run 29555275667 finalized at $0.887; Task 4 merge was $0). Week 3's
+remaining live spend: the Task 5+7 API-wave gate run (~$0.90, ONE run if batched) +
+Task 6's smoke run (~3¢).
 
 ## Standing items to fold in when convenient
 
