@@ -7,21 +7,25 @@ is the #1 hiring signal; plain RAG demos are a yellow flag).
 
 ## Status (updated 2026-07-17)
 
-**WEEK 2.5 COMPLETE — issue #45 closed (2026-07-17). WEEK 3 IS NEXT** (issues #13–#16:
-console → review queue → deploy → demo protection). All hardening merged (PRs #46–#49),
-eval gate GREEN on the re-derived baseline. **Calibration finding (quote carefully):
-judge v2 improved invariantly (0.279→0.418 on round-1 labels, 0.038→0.133 on round-2),
-but Cai's self-agreement across two labeling rounds is kappa 0.212 — the single-rater
-label standard is the measured bottleneck, so official v2 kappa = 0.133 is noise-capped;
-next step is a second rater (chore #19), not judge tuning.** Full table:
-`results/judge-calibration.md`. Thresholds DERIVED from held-out data (margin 0.02→0.0,
-`reports/threshold-derivation.md`); headline catch 5/5 (design-intent) + strict 3/5 = 0.60,
-both baseline-guarded. Judge advises, never vetoes. Budget ~$7.7 of $20 (⚠️ eval-path
-merges auto-trigger the ~$0.90 gate — batch them; docs/tests don't trigger).
-**→ RESUME HERE:** `docs/week-2-evals/HANDOFF.md` — the controller operating manual
-(blocker first, environment + tooling, per-task choreography, budget rules, binding
-decisions). For what happened last session: `docs/SESSION-LOG.md`. The map: `docs/README.md`.
-Raw ledger: `.superpowers/sdd/progress.md` (git-ignored, local).
+**WEEK 3 IN PROGRESS (2026-07-17): #13 CLOSED** (runs API + console run list/detail,
+PRs #50/#51); **#14 half done** (review-queue API + `review_decisions` merged, PR #52 —
+the queue PAGE is the next action; session stopped there by request). Then Tasks 5–7:
+deploy-prep → live deploy (needs Cai's Railway/Vercel accounts) → demo protection, per
+`docs/week-3-console/PLAN.md` (its gate-cost rule + descope ladder are binding). Budget
+~$8.6 of $20 (⚠️ eval-path merges auto-trigger the ~$0.90 gate — batch them, cancel
+superseded queued runs; `console/**`/docs/tests don't trigger). **VERIFY at session
+start: gate run 29555275667 green + record its cost.**
+Week 2.5 record (quote kappas carefully): judge v2 improved invariantly (0.279→0.418 r1,
+0.038→0.133 r2) but Cai's self-agreement is kappa 0.212 — single-rater labels are the
+bottleneck; official v2 kappa 0.133 is noise-capped; next step = second rater (#19).
+Full table: `results/judge-calibration.md`. Thresholds derived from held-out data
+(`docs/week-2-evals/reports/threshold-derivation.md`); catch 5/5 design-intent + 3/5
+strict, both baseline-guarded; judge advises, never vetoes.
+**→ RESUME HERE:** `docs/week-3-console/HANDOFF.md` (Week 3 state + the exact Task-4
+dispatch recipe) → it links to `docs/week-2-evals/HANDOFF.md`, still the operating manual
+(environment, per-task choreography, budget rules, binding decisions). Last session:
+`docs/SESSION-LOG.md`. The map: `docs/README.md`. Raw ledger:
+`.superpowers/sdd/progress.md` (git-ignored, local).
 
 - **Live numbers on record:** adversarial catch rate **5/5 (100%)**, escalation recall
   **1.0**, precision 0.88, ~**2.9¢/run** (prompt caching on), p50 31–34s. Routing accuracy

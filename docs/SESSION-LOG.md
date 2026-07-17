@@ -9,6 +9,46 @@ read the current week's `HANDOFF.md`. For "what did task N build", read that wee
 
 ---
 
+## Session — 2026-07-17 (later) · Week 3 begins — plan + runs API + console pages + review-queue API; stopped before Task 4 by request
+
+**Where it started:** Week 3 unblocked (#45 closed earlier the same day).
+**Where it ended:** **#13 CLOSED (both halves); #14 half done (API merged, page not
+started — Cai asked to stop before Task 4).** Resume: `week-3-console/HANDOFF.md`.
+
+### What happened
+1. **Week 3 plan written** (`docs/week-3-console/PLAN.md`, 7 tasks for issues #13–#16)
+   with a new binding **gate-cost rule**: API-path merges are batched and superseded
+   queued eval-gate runs cancelled — one billed run per merge wave.
+2. **Task 1 — runs read API** (PR #50, `360b1d0`): `GET /api/runs` + `GET /api/runs/{id}`
+   in a new `console_queries.py`; the naive/aware timestamp gotcha neutralized in one
+   tested helper; failed runs structurally unfilterable. Review clean. Its gate run was
+   cancelled as superseded ($0).
+3. **Task 2 — the console** (PR #51, `9f41aaa`): Next.js 15 scaffold in `console/`,
+   run list + run detail (flat trace table, rationale captioned "post-hoc — not
+   evidence"), zero extra dependencies. Review found 1 Important (no error boundary →
+   framework crash page on API-down) → haiku fixer added `error.tsx` → re-approved.
+   **#13 closed.** Honest footnote: dev DB has ZERO completed runs (everything
+   escalates by design) — completed-row styling is code-verified only.
+4. **Task 3 — review-queue API** (PR #52, `f760367`): `review_decisions` table
+   (Alembic, unique verdict per run), `GET /api/review-queue` (escalated + undecided,
+   oldest first), `POST /api/review/{run_id}` behind the operator token — **fails
+   closed: 503 when no token is configured**, checked before any comparison. Review
+   clean. Its merge triggered the session's one billed gate run (29555275667,
+   ~$0.90, in flight at session end — VERIFY GREEN at next session start).
+5. Per-task deliverables (issue comments, STORY chapters, ledger) posted immediately
+   after each task — Cai's re-confirmed standing rule.
+
+### Spend
+~**$0.90 this session** (the one API-wave gate run; pending exact figure). Total ≈
+**$8.6 of $20**.
+
+### Open
+- **Task 4 (queue page) is the next action** — dispatch recipe at the top of
+  `week-3-console/HANDOFF.md`. Then Tasks 5→7 (batch their API merges!), then the
+  Task 6 live deploy (needs Cai's Railway/Vercel accounts).
+
+---
+
 ## Session — 2026-07-17 · Labeling round 2 lands — the recalibration measures the HUMAN, and Week 2.5 CLOSES
 
 **Where it started:** everything done except Cai's fresh labeling of `judge_labels_v2.csv`.
