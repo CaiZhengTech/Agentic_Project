@@ -133,5 +133,39 @@ screen.**
 
 ---
 
-*Next (next session): Task 5 — deploy prep (CORS + JSON logs), then the live deploy
-(Railway + Neon + Vercel), then demo abuse protection (#16).*
+## Task 5 — Wiring the house for the move (✅ merged, PR #54, refs #15)
+
+**Analogy:** the console and the API are about to move out of the laptop and into two
+different buildings on the internet (Vercel and Railway). Two bits of unglamorous wiring
+have to exist before the move. First, the **doorbell rules**: browsers won't let a page in
+one building talk to an API in another unless the API explicitly names who may call —
+that's CORS. The rule here fails closed: if no guest list is configured, *nobody* outside
+gets in; there is no "allow everyone" setting anywhere in the code. Second, the **flight
+recorder's voice**: in production, logs get read by machines, not scrolled by humans — so
+the app can switch to one-line JSON log entries a log service can filter, timestamped in
+UTC.
+
+**Dana's journey:** when the review page approves Dana's escalation from the deployed
+console, the browser first knocks on the API's door and asks "may a page from this address
+POST here, carrying an operator token?" Before this task the API didn't answer that knock
+at all — the very gap Task 4 flagged. Now it answers precisely: yes to the configured
+console address, with exactly those headers — and silence to everyone else.
+
+**Under the hood:** Starlette's `CORSMiddleware` (ships with FastAPI — zero new
+dependencies), registered only when `CORS_ORIGINS` is non-empty, no wildcards, and only
+the methods and headers the console actually uses. A stdlib JSON formatter
+(`logging_setup.py`) emits `{"ts", "level", "logger", "msg"}` lines when `LOG_JSON` is on.
+TDD throughout; the review's one Important finding was a good one: the CORS tests
+preflighted a GET endpoint, but the request that matters is the review page's POST with
+its operator-token header — so a test now pins that exact browser-real preflight, meaning
+no future edit can quietly re-break the review queue in production. 207 tests green. One
+process story worth keeping: this PR's CI failed once on a duplicate-key error that had
+nothing to do with the change — two copies of the test suite (a local review run and CI)
+had raced each other on the shared test database. Diagnosed from the timeline, re-run
+green; the lesson (don't run local integration tests while CI is mid-flight) is in the
+ledger.
+
+---
+
+*Next: Task 7 — demo abuse protection (seeded pool, rate limit, visible spend-cap pause),
+then Task 6 — the live deploy (Railway + Neon + Vercel) with Cai.*
