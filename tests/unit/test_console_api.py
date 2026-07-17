@@ -4,6 +4,7 @@ JSONB columns (runs.gate_signals, spans.attributes) are created here as JSON —
 SQLite has no JSONB — the ORM classes in triagedesk.models are used unmodified.
 """
 
+import importlib
 import uuid
 from datetime import UTC, datetime
 
@@ -13,6 +14,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
+import triagedesk.app as app_module
 from triagedesk.app import app
 from triagedesk.config import settings
 from triagedesk.console_queries import _duration_ms
@@ -330,3 +332,53 @@ def test_post_review_503_when_admin_token_unset(db_session, client, monkeypatch)
         headers={"X-Admin-Token": "anything"},
     )
     assert resp.status_code == 503
+
+
+# --- CORS ---
+# CORSMiddleware is registered at app.py module load time from settings.cors_origins,
+# so these tests monkeypatch the setting and then `importlib.reload(app_module)` to
+# rebuild a fresh FastAPI app off the patched value, per the pattern the brief
+# suggested (app.py stays a plain module — no factory needed). The reload only
+# rebinds `app_module.app`; the `app` name imported at the top of this file (used by
+# every other test's `client` fixture) still points at the original object, so this
+# can't leak into unrelated tests.
+def test_cors_allows_configured_origin_and_omits_header_for_others(monkeypatch):
+    monkeypatch.setattr(settings, "cors_origins", "https://console.example.com")
+    importlib.reload(app_module)
+
+    cors_client = TestClient(app_module.app)
+
+    allowed = cors_client.options(
+        "/api/runs",
+        headers={
+            "Origin": "https://console.example.com",
+            "Access-Control-Request-Method": "GET",
+            "Access-Control-Request-Headers": "x-admin-token,content-type",
+        },
+    )
+    assert allowed.headers.get("access-control-allow-origin") == "https://console.example.com"
+
+    disallowed = cors_client.options(
+        "/api/runs",
+        headers={
+            "Origin": "https://evil.example.com",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert "access-control-allow-origin" not in disallowed.headers
+
+
+def test_cors_empty_origins_registers_no_middleware_fail_closed(monkeypatch):
+    monkeypatch.setattr(settings, "cors_origins", "")
+    importlib.reload(app_module)
+
+    cors_client = TestClient(app_module.app)
+
+    resp = cors_client.options(
+        "/api/runs",
+        headers={
+            "Origin": "https://console.example.com",
+            "Access-Control-Request-Method": "GET",
+        },
+    )
+    assert "access-control-allow-origin" not in resp.headers

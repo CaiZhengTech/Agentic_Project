@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     voyage_api_key: str = ""
     cost_cap_usd: float = 0.10
     admin_token: str = ""
+    cors_origins: str = ""
+    log_json: bool = False
 
 
 settings = Settings()
