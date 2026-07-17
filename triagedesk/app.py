@@ -2,6 +2,7 @@ import uuid
 from typing import Literal
 
 from fastapi import Depends, FastAPI, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -9,9 +10,27 @@ from sqlalchemy.orm import Session
 from triagedesk.config import settings
 from triagedesk.console_queries import get_run_detail, list_review_queue, list_runs
 from triagedesk.db import get_db
+from triagedesk.logging_setup import configure_json_logging
 from triagedesk.models import ReviewDecision, Run, Ticket
 
 app = FastAPI(title="TriageDesk")
+
+if settings.log_json:
+    configure_json_logging()
+
+# CORS is fail-closed: an empty cors_origins means NO cross-origin access, so the
+# cleanest way to express that is to not register the middleware at all rather than
+# add it with an empty allow_origins list. No wildcard is ever used. The console's
+# requests are JSON POSTs carrying a custom auth header, so the preflight needs both
+# that header and Content-Type explicitly allowed.
+_cors_origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
+if _cors_origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=_cors_origins,
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["X-Admin-Token", "Content-Type"],
+    )
 
 
 class ReviewDecisionIn(BaseModel):
