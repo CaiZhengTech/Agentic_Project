@@ -206,3 +206,36 @@ in `lib/format.ts` rather than duplicated across the two pages.
   background dev/API servers after verification — this killed all Node and
   Python processes on the machine, not just this session's; worth knowing if
   anything else was running.
+
+## Fix: error boundary (review finding)
+
+Post-review fix for the finding that `lib/api.ts` throws raw `Error` on any
+non-2xx response or network failure, leaving the pages without a catch handler.
+An unreachable API previously rendered Next's generic error page instead of an
+honest, console-appropriate message.
+
+**Fix:** Added `console/app/error.tsx` — a client-side error boundary (Next.js
+pattern) that catches upstream API errors and renders:
+- Heading: "Can't reach the TriageDesk API"
+- Context sentence: run data couldn't be loaded, check API is up and
+  `NEXT_PUBLIC_API_URL` is correct
+- Error message in a styled code block (using `--failed-bg` and `--failed-border`
+  CSS vars from `globals.css` for consistency)
+- "Try again" button wired to the `reset()` prop (Next.js error boundary API)
+
+Styling follows the existing house style (inline styles + CSS variables, no
+new dependencies).
+
+**Build/lint verification:**
+```
+$ npm run build
+  ▲ Next.js 15.5.20 (Turbopack)
+  ✓ Compiled successfully in 2.4s
+  ✓ Generating static pages (5/5)
+
+$ npm run lint
+> eslint
+(no output — clean)
+```
+
+Commit: `68f3767` — `fix: error boundary for unreachable API (Refs #13)`.
