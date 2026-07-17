@@ -1,5 +1,26 @@
 # Judge calibration
 
+> ⚠️ **Two judge versions live in this file — never conflate their kappas.**
+> **v1** (tool-blind, graded vs KB-only context) is the calibration below.
+> **v2** (`JUDGE_PROMPT_VERSION = 2`, Hardening Task 2/issue #45) additionally receives
+> the verified account facts the agent's tools returned.
+
+## Judge v2 — PREVIEW (official kappa pending Cai's fresh blind relabel)
+
+Re-judged the SAME 41 replies with the tool-evidence judge (backfill batch
+`69b3fa3d`, 2026-07-17, $0.35). Numbers below compare v2 verdicts against the
+**v1-era human labels** (same replies, so the judge is the only variable) —
+a preview, not the official calibration, which uses the fresh blind pass in
+`judge_labels_v2.csv`:
+
+- Raw agreement: **0.634** (v1: 0.512)
+- Unweighted kappa: **0.418** (v1: 0.279)
+- Weighted kappa (linear): **0.551**, bootstrap 95% CI **(0.213, 0.607)**
+- Verdict shift: v2 = 18 pass / 10 fail / 13 needs_review (v1 was far stricter —
+  the tool-blindness accounted for most "invented fact" flags)
+
+## Judge v1 (tool-blind) — the original calibration
+
 - Labels compared (solo): **41**
 - Raw agreement: **0.512**
 - **Cohen's kappa: 0.279**

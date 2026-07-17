@@ -4,7 +4,9 @@
 milestone. Everything here is true and defensible — every claim traces to a commit,
 a test, or a logged run.*
 
-**Last updated:** 2026-07-14 (**Week 2 COMPLETE** — CI eval gate green on main, kill criterion met)
+**Last updated:** 2026-07-17 (**Week 2.5 hardening ~done** — post-council eval-layer fixes
+merged, thresholds derived from held-out data, judge v2 sees tool evidence, baseline
+re-derived and validated live; awaiting Cai's blind relabel for the official v2 kappa)
 
 ---
 
@@ -79,7 +81,30 @@ a test, or a logged run.*
 > replayed those claims against the simulated CRM, seven out of seven were true —
 > facts the agent got from its tools, which the judge was never shown. The grader
 > wasn't wrong, it was under-informed. That finding changed my CI design: a
-> kappa-0.28 judge advises, it doesn't veto."
+> kappa-0.28 judge advises, it doesn't veto. Then I fixed it: the judge now receives
+> the verified account facts the agent's tools returned, and on the same 41 replies
+> agreement jumped — raw agreement 0.51 → 0.63, kappa 0.28 → 0.42 — with the final
+> number pending a fresh blind labeling pass, because you don't grade your own fix
+> with stale labels."
+
+**On auditing my own evals (the Week-2.5 story):**
+> "After my eval gate went green I ran an adversarial review of the eval layer itself,
+> and it found my headline number was flattering me: 'adversarial catch rate 5/5'
+> counted ANY escalation as a catch — a system that blindly escalates everything would
+> score 100%. So I made the metric reason-aware: a trap only counts if the defense
+> layer it was built to test actually fired. The honest split is 5/5 by design intent
+> but 3/5 strict — two traps were caught by backstop layers, not their primaries. Both
+> numbers are in my CI baseline now, so the strict one can only improve visibly."
+
+**On threshold derivation (why the gate's statistics are honest):**
+> "When I finally derived the gate thresholds from held-out data, the data said
+> something uncomfortable: my two confidence signals carried zero reply-quality
+> information — the good and bad replies' means were even slightly inverted. So I
+> didn't pretend precision I didn't have: the margin threshold sits at its semantic
+> zero — the embedding evidence must agree with the model's queue choice — and quality
+> assurance is carried by the structural rules. The audit even caught one bad reply
+> that cleared both thresholds — and it was a denial the adverse-action rule blocks
+> before thresholds are consulted. Defense in depth, demonstrated on held-out data."
 
 **On why a low kappa was still safe to ship:**
 > "Eighteen of the twenty disagreements were the judge being stricter than me —
@@ -100,10 +125,12 @@ a test, or a logged run.*
 > an every-merge trigger would have eaten my entire remaining budget."
 
 **On honest limitations (say this proactively — it builds trust):**
-> "Right now nothing auto-resolves — both live runs' classification margins were below
-> my placeholder threshold. That's deliberate: the thresholds are placeholders, and
-> Week 2's whole job is setting them from a calibration table against human labels
-> rather than my intuition."
+> "Right now nothing auto-resolves — and my metrics can finally say precisely why: not
+> the thresholds (those are now derived from held-out data and reachable), but the
+> model's own conservatism and my entitlement-receipt rule. My 'escalation recall 1.0'
+> is real but partly a consequence of total conservatism — which is why my baseline
+> also tracks the strict per-layer catch rate, the number that can't be gamed by
+> escalating everything."
 
 ---
 
@@ -131,21 +158,26 @@ budget. Each cut is a talking point, not a gap:
 
 | Metric | Value |
 |---|---|
-| **Adversarial catch rate** | **5 / 5 = 100%** — every trap caught by its intended defense layer |
-| **Escalation recall** | **1.0** — nothing needing a human slipped through (precision 0.88) |
+| **Adversarial catch rate (design-intent)** | **5 / 5 = 100%** — every trap stopped by a layer designed to stop it (documented equivalence policy) |
+| **Adversarial catch rate (strict, per-primary-layer)** | **3 / 5 = 0.60** — the honest diagnostic: two traps were caught by backstops, not their primary layer; regression-guarded in CI so it can only improve visibly |
+| **Escalation recall** | **1.0** — nothing needing a human slipped through (precision 0.88) — real, but partly a product of total conservatism; that's exactly why the strict catch rate exists |
 | Real tickets in the database | 11,922 (public Kaggle dataset, English) |
 | Golden evaluation set | 25 cases (20 stratified real + 5 authored adversarial) |
-| Judge calibration | 41 blind human labels · raw agreement 0.512 · **Cohen's kappa 0.279** (judge stricter than human in 18/20 disagreements — fails in the safe direction) |
-| Judge "hallucination" flags replayed against the CRM | 7/7 were TRUE tool-derived facts — the judge is tool-blind (see disagreement report) |
+| Judge calibration (v1, tool-blind) | 41 blind human labels · raw agreement 0.512 · **kappa 0.279** (stricter than human in 18/20 disagreements — fails safe) |
+| Judge "hallucination" flags replayed against the CRM | 7/7 were TRUE tool-derived facts — the judge was tool-blind, so it was fixed (v2 sees the tool evidence) |
+| Judge v2 (tool-evidence) — preview on same replies | raw agreement **0.634** · kappa **0.418** · weighted kappa **0.551** (95% CI 0.21–0.61) — official number pending a fresh blind labeling pass |
+| Gate thresholds | Derived from **held-out** data (never the golden set), with a leakage audit showing the layered gate fails closed |
 | Knowledge-base articles authored + embedded | 15 |
 | Pipeline stages, all live-verified end-to-end | 5 |
-| Cost per full pipeline run | **~2.9¢** with prompt caching (hard-capped at 10¢) |
-| Latency | p50 31s · p95 41s |
-| CI eval gate | **GREEN on main, first live run** — 25 golden cases re-run on behavior-relevant pushes, $1 cap, $0.72 actual |
-| Test suite | 145+ tests + lint + secret-scan, gating every merge |
-| **Total API spend, entire project to date** | **~$3.77** against a hard $20 budget |
+| Cost per full pipeline run | **~3.0¢** with prompt caching (hard-capped at 10¢) |
+| Latency | p50 ~35s · p95 ~46s |
+| CI eval gate | **GREEN on main across 4 consecutive live runs** — 25 golden cases re-run on behavior-relevant pushes, $1 in-workflow cap (~$0.90 actual/run) |
+| Test suite | 188 tests + lint + secret-scan, gating every merge |
+| **Total API spend, entire project to date** | **~$7.7** against a hard $20 budget |
 
-*(Week 2 complete — every planned eval-layer artifact landed. Next: the Week-3 console.)*
+*(Week 2.5 hardening: the eval layer was adversarially reviewed and fixed — reason-aware
+metrics, run-scoped calibration, tool-evidence judge, derived thresholds, re-derived
+baseline. Next: Cai's blind relabel → official v2 kappa, then the Week-3 console.)*
 
 ---
 

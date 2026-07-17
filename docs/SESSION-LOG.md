@@ -9,6 +9,57 @@ read the current week's `HANDOFF.md`. For "what did task N build", read that wee
 
 ---
 
+## Session — 2026-07-16/17 · Week 2.5 hardening EXECUTED — all three tasks done; awaiting Cai's blind relabel
+
+**Where it started:** council checkpoint done (2026-07-14), hardening plan on `main`
+(#44, issue #45), Task 1 implemented but unreviewed on its branch.
+**Where it ended:** **all three hardening tasks complete.** Tasks 1–2 merged with clean
+subagent reviews (PRs #46, #47); Task 3 (controller-only, live) executed end-to-end:
+thresholds derived from held-out data (PR #48), judge-v2 backfill + preview kappa,
+baseline re-derived from the live run (PR #49) and validated green. **One human action
+open: Cai's fresh blind labeling of `judge_labels_v2.csv` (41 rows) → official v2 kappa.**
+
+### What happened
+1. **Task 1 (metric integrity) reviewed + merged** (`4932aea`, PR #46) — review clean.
+   Headline `adversarial_catch_rate` is now reason-aware with a documented equivalence
+   policy; `adversarial_catch_rate_strict` = 3/5 = 0.60 is the honest diagnostic; cap
+   became a pre-check; judge cost its own line item.
+2. **Task 2 (calibration scoping, weighted kappa+CI, judge tool-evidence, pinned temp,
+   golden view) implemented + reviewed + merged** (`3f2cebd`, PR #47) — review clean.
+   `JUDGE_PROMPT_VERSION = 2`; the `eval_results_golden` view is documented in
+   DATA-SCHEMA.md as the only sanctioned non-Python read path.
+3. **Thresholds re-derived from the held-out pool** (PR #48, `f112e29`): the signals
+   carry NO reply-quality information (pass/fail means directionally inverted!), so
+   `MARGIN_THRESHOLD` moved to its semantic zero (0.0 = embedding agrees with the LLM's
+   queue choice) and 0.45 similarity was re-grounded (~36th percentile held-out).
+   Leakage audit: the one human-fail reply clearing both thresholds is a denial the
+   adverse-action rule blocks structurally. Full record:
+   `week-2-evals/reports/threshold-derivation.md`.
+4. **Judge-v2 re-backfill, append-only** ($0.35): the 41 labeled replies were COPIED to
+   a fresh batch (`69b3fa3d`) and re-judged with the tool-evidence judge — v1 rows
+   untouched (evidence preserved). **Preview vs the v1-era labels: raw agreement
+   0.512 → 0.634, kappa 0.279 → 0.418, weighted 0.551 (CI 0.21–0.61).** Official number
+   waits for the fresh blind pass (`judge_labels_v2.csv`).
+5. **Baseline re-derived from live run `d429d547`** (PR #49, `31b7f25`): floors now
+   include `adversarial_catch_rate_strict ≥ 0.60` and `adversarial_escalate_rate ≥ 1.00`;
+   validated by the push-triggered gate run.
+6. **Surprise + lesson:** merging PRs #46/#47/#48 each auto-triggered the eval gate
+   (eval paths — by design, but unbudgeted): 3 unplanned runs ≈ $2.7. The paths trigger
+   re-verifying eval-layer changes is the system working; the lesson (ledger) is to
+   BATCH eval-path merges when several land in one session.
+
+### Spend
+**≈ $3.94 this session** (4 gate runs ≈ $0.89–0.91 each incl. judge; backfill $0.35).
+Total **≈ $7.7 of $20**.
+
+### Open
+- **Cai: blind-label `judge_labels_v2.csv`** (41 rows, instructions in
+  `results/LABELING-INSTRUCTIONS.md`) → `label-import --eval-run 69b3fa3d…` →
+  `calibrate --eval-run 69b3fa3d…` → official v2 kappa → close #45.
+- Then Week 3 (issues #13–#16) per the standing plan.
+
+---
+
 ## Session — 2026-07-14 · Calibration lands (kappa 0.279, the tool-blind judge) + the CI eval gate goes GREEN — WEEK 2 COMPLETE
 
 **Where it started:** blocked on Cai's blind labeling pass (41 rows).

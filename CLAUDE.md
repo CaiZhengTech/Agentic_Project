@@ -5,12 +5,17 @@ Northeast US (NYC/Boston) new-grad SWE roles, fall 2026 cycle. The differentiato
 agent — it's the eval/observability/trust discipline around it (market research: eval design
 is the #1 hiring signal; plain RAG demos are a yellow flag).
 
-## Status (updated 2026-07-14, end of day)
+## Status (updated 2026-07-17)
 
-**WEEK 2 COMPLETE — all 7 tasks done, issues #8–#12 closed. KILL CRITERION MET: the CI
-eval gate is GREEN on `main`** (PR #42, live run $0.72 under the $1 cap). **STOPPED for
-Cai's end-of-Week-2 llm-council checkpoint — the agenda is in
-`docs/week-2-evals/HANDOFF.md`. No Week 3 work before it.** Budget ~$3.77 of $20.
+**WEEK 2.5 HARDENING COMPLETE except one human step** (the council checkpoint happened
+2026-07-14 → `docs/week-2-evals/HARDENING-PLAN.md`, issue #45; all 3 tasks executed,
+PRs #46–#49 merged, eval gate validated GREEN on the re-derived baseline). **⏸ BLOCKED
+on Cai: blind-label `judge_labels_v2.csv` (41 rows) → official judge-v2 kappa → close
+#45. No Week 3 work before that.** Preview: agreement 0.512→0.634, kappa 0.279→0.418
+(judge-v2 sees tool evidence). Thresholds now DERIVED from held-out data (margin 0.02→0.0,
+`reports/threshold-derivation.md`); headline catch 5/5 (design-intent) + strict diagnostic
+3/5 = 0.60, both baseline-guarded. Budget ~$7.7 of $20 (⚠️ eval-path merges auto-trigger
+the ~$0.90 gate — batch them; docs/tests don't trigger).
 **→ RESUME HERE:** `docs/week-2-evals/HANDOFF.md` — the controller operating manual
 (blocker first, environment + tooling, per-task choreography, budget rules, binding
 decisions). For what happened last session: `docs/SESSION-LOG.md`. The map: `docs/README.md`.

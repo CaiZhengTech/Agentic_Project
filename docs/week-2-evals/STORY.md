@@ -367,6 +367,45 @@ even ran live against the Neon test branch. Review clean on the first pass.
 
 ---
 
-*Next: Hardening Task 3 — re-derive the gate thresholds from held-out data, re-judge
-everything with the receipts-aware judge (~15¢), one live re-baselining run, then Cai's
-fresh blind labels → the new kappa. Then Week 3 — the glass-box console.*
+## Hardening Task 3 — Setting the bar with data, and re-grading the past (✅ done, PRs #48 + #49)
+
+**Analogy:** for two weeks the confidence gate had a "you must be this tall to ride" sign
+whose height was guessed on day one — and set so high that literally nobody could ever
+ride. When we finally measured real people (the held-out calibration pool — 25 tickets
+the golden set has never touched), the data said two uncomfortable, useful things. First:
+the old bar was indeed unreachable (1 in 22 could clear it). Second, and more honest:
+**height doesn't predict who's a safe rider anyway** — the gate's two statistical signals
+carry no information about which replies were actually good. So the new bar isn't a
+pretend-precise number: the margin threshold now sits at its natural zero ("the embedding
+evidence must at least *agree* with the model's queue choice"), and safety is carried by
+the rules that actually work — the adverse-action rule and the entitlement receipt.
+
+**Dana's journey (the leakage audit):** exactly one bad reply in the held-out pool clears
+both new thresholds — and it's a denial, just like Dana's. It never reaches a customer,
+because the adverse-action rule fires *before* the thresholds are even consulted. That's
+the layered design proving itself on data it had never seen: when the statistical layer
+is blind, the structural layer still catches the ball.
+
+**Re-grading the past:** the receipts-aware judge (Task 2) then re-graded the same 41
+replies a human already labeled — same essays, new grader, so any change in agreement is
+purely the judge fix. Preview result: **raw agreement 0.512 → 0.634, kappa 0.279 → 0.418**
+(weighted 0.551). The official number waits for a *fresh blind* labeling pass — you don't
+certify your own fix against stale answer sheets. And the old grades weren't erased: the
+re-judge went into a brand-new batch, so v1's evidence is preserved forever (the run-scoping
+built in Task 2 exists precisely so these batches never mix).
+
+**Under the hood (the re-baseline):** one live suite run under the fully hardened layer —
+derived thresholds, pinned temperature, reason-aware metrics, receipts-aware judge — came
+back green and became the new committed baseline. The regression floor now guards the
+strict per-layer catch rate (0.60) too, so the number the council caught us NOT measuring
+can only improve in public. A twist we turned into evidence: merging each hardening PR
+auto-triggered the eval gate (it re-verifies anything touching agent code — by design),
+so we got three consecutive green gate runs across the metric, judge, and threshold
+changes — unplanned spend, but live proof the hardening didn't move the system's actual
+behavior. The lesson (now in the ledger): batch eval-code merges; each gate run costs
+real money.
+
+---
+
+*Week 2.5 is done, minus one human step: Cai's fresh blind labels on `judge_labels_v2.csv`
+→ the official v2 kappa → issue #45 closes. Then Week 3 — the glass-box console.*

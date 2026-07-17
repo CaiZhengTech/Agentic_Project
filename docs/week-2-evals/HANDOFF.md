@@ -1,36 +1,41 @@
 # RESUME HERE — Controller Operating Manual
 
 **Any new session starts with this file.** Written so a fresh controller (any model) can
-finish this project end-to-end without guessing. Last updated: 2026-07-14.
+finish this project end-to-end without guessing. Last updated: 2026-07-17.
 
 ---
 
-## ⏸ WEEK 2 IS COMPLETE — STOPPED for Cai's llm-council checkpoint
+## ⏸ BLOCKER — Cai's fresh blind labeling pass (the last Week-2.5 item)
 
-**All 7 tasks done (2026-07-14). The kill criterion is MET: the CI eval gate is GREEN on
-`main`** (workflow run 29359540499, $0.72 under the $1 cap — adversarial catch 1.00,
-escalation recall 1.00, precision 0.88, 2.9¢/run, all within `results/eval-baseline.json`).
-Issues #8–#12 all closed. Spend ≈ **$3.77 of $20**.
+**Week 2.5 hardening is otherwise COMPLETE** (all three tasks of
+`docs/week-2-evals/HARDENING-PLAN.md`; issue #45 has one unchecked box). What waits on Cai:
 
-**Do NOT start Week 3.** Cai runs his end-of-Week-2 llm-council checkpoint first (he
-re-confirmed this 2026-07-14). The council agenda, assembled from this week's findings:
+1. **Blind-label `judge_labels_v2.csv`** (repo root, 41 rows — same replies as the v1
+   calibration, re-judged by the tool-evidence judge v2; verdicts withheld). Read
+   `results/LABELING-INSTRUCTIONS.md` first. Do NOT look at
+   `results/judge-calibration.md`'s v2 preview before labeling — blindness is the point.
+2. Then: `label-import judge_labels_v2.csv --eval-run 69b3fa3d-e83e-46cf-b9bb-8c157ec3e74b`
+   → `calibrate --eval-run 69b3fa3d-e83e-46cf-b9bb-8c157ec3e74b` → the official v2 kappa
+   (unweighted + weighted + CI, header stamped `JUDGE_PROMPT_VERSION = 2`) goes into
+   `results/judge-calibration.md` → tick the last box on #45, close it with a closeout
+   comment → **then Week 3 starts** (issues #13–#16).
 
-1. **The tool-blind judge (top item).** Kappa 0.279; 7/7 flagged "hallucinations" were true
-   tool-derived facts (`reports/task-6-calibration-kappa.md`). Decide: add the act span's
-   tool evidence to the judge context + re-judge (~15¢ backfill) + second labeling pass for
-   a new kappa — or ship the honest 0.279 with the analysis as the case-study story.
-2. **Gate-threshold re-derivation** from held-out data + the calibration table (the 0.02
-   margin threshold is structurally near-unreachable; zero ideal-route cases were
-   threshold-blocked). After re-derivation, re-derive `results/eval-baseline.json` too — it
-   is currently a regression floor on observed behavior, explicitly not a quality target.
-3. **Dedicated Neon eval branch.** `EVAL_DATABASE_URL` currently points at the DEV branch
-   (no Neon API key available to create a branch; dev is where all suite history lives).
-   Cheap fix: create the branch in the Neon dashboard, update the repo secret.
-4. **Tightened-baseline live failure proof was skipped** (~$1 saved): the exit-non-zero
-   breach path is unit-tested (`tests/unit/test_eval_cli.py`); GitHub fails a job on
-   non-zero exit by contract. Council can demand the live proof if it disagrees.
-5. **Week 3 scope confirmation** (console run list/detail → review queue → deploy → demo
-   protection, with the descope ladder).
+**Week 2.5 outcome (2026-07-16/17):** metrics are reason-aware (headline catch 5/5
+design-intent, strict diagnostic 3/5 = 0.60 — both baseline-guarded); calibration is
+run-scoped with weighted kappa + bootstrap CI; the judge sees tool evidence
+(`JUDGE_PROMPT_VERSION = 2`, preview: agreement 0.512 → 0.634, kappa 0.279 → 0.418);
+precheck/classify pinned to temp 0; `eval_results_golden` view for Week 3's console;
+thresholds derived from held-out data (`reports/threshold-derivation.md` — margin 0.02 → 0.0,
+its semantic zero); baseline re-derived from live run `d429d547` and validated green.
+Spend ≈ **$7.7 of $20**.
+
+**Still-open council item (cheap, anytime):** dedicated Neon eval branch —
+`EVAL_DATABASE_URL` points at DEV; create a branch in the Neon dashboard, update the secret.
+
+**⚠️ Cost lesson (binding-ish):** merging anything touching `triagedesk/**`, `kb/**`,
+`alembic/**`, `requirements.txt`, the workflow file, or `results/eval-baseline.json`
+push-triggers the eval gate (~$0.90/run incl. judge — by design, it re-verifies eval-layer
+changes). **Batch eval-path merges**; docs/tests merges never trigger it.
 
 ---
 
@@ -107,7 +112,7 @@ worked example** everywhere. Continuity is the point.
 
 ---
 
-## 💰 Budget — HARD CAP $20, no top-ups (~$3.05 spent)
+## 💰 Budget — HARD CAP $20, no top-ups (~$7.7 spent)
 
 - Unit tests are **$0** — fixtures and fakes only, always.
 - Live steps are deliberate, counted events. A full eval suite run ≈ **$0.75–1.30**;
@@ -150,6 +155,9 @@ worked example** everywhere. Continuity is the point.
 | 5 LLM judge | #10 | ✅ closed, PR #36 (+#37) |
 | 6 Kappa tooling + calibration pool | #11 | ✅ closed — PRs #38/#39 + calibration run (kappa 0.279) |
 | 7 CI eval gate — **KILL CRITERION** | #12 | ✅ closed — PR #42, gate GREEN on main ($0.72) |
+| 2.5-1 Metric integrity (reason-aware catch, cap pre-check, judge cost) | #45 | ✅ merged — PR #46 (`4932aea`), review clean |
+| 2.5-2 Calibration scoping · weighted kappa+CI · judge tool-evidence · pinned temp · golden view | #45 | ✅ merged — PR #47 (`3f2cebd`), review clean |
+| 2.5-3 Thresholds (held-out) + judge-v2 backfill + baseline re-derivation (controller, live) | #45 | ✅ done — PRs #48/#49, gate validated green; ⏸ awaiting Cai's blind relabel |
 
 **Live numbers:** adversarial catch **5/5 (100%)** · escalation recall **1.0** · precision 0.88
 · ~**2.9¢/run** · p50 31–34s. Judge on the golden 19: 9 pass / 5 fail / 5 needs_review.
@@ -167,11 +175,9 @@ re-derive from held-out data + the calibration table.
 
 ## ➡️ Next steps, in order
 
-1. **Cai's llm-council checkpoint** (agenda at the top of this file). Nothing proceeds
-   without it.
-2. **Council decisions get executed** (judge context fix or not; threshold re-derivation
-   plan; Neon eval branch; baseline re-derivation).
-3. **Week 3 begins** per the plan below — only after 1 and 2.
+1. **Cai blind-labels `judge_labels_v2.csv`** → import → calibrate → official v2 kappa
+   → close #45 (see the blocker section at the top — exact commands there).
+2. **Week 3 begins** per the plan below — only after #45 closes.
 
 ## 🔭 Weeks 3–4 (so the whole path is visible)
 
