@@ -23,7 +23,7 @@ export default async function RunDetailPage({
   return (
     <main style={{ padding: "2rem", maxWidth: 1100, margin: "0 auto" }}>
       <p>
-        <Link href="/">&larr; back to runs</Link>
+        <Link href="/runs">&larr; back to runs</Link>
       </p>
       <h1>Run {run.id}</h1>
 
