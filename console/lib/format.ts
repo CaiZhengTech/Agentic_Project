@@ -34,5 +34,6 @@ export function stateRowClass(state: string): string {
 export function stateBadgeClass(state: string): string {
   if (state === "escalated") return "badge badge-escalated";
   if (state === "failed") return "badge badge-failed";
+  if (state === "completed") return "badge badge-completed";
   return "badge";
 }
