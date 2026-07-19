@@ -61,7 +61,7 @@ export default async function LandingPage() {
           <Link
             key={run.id}
             href={`/runs/${run.id}`}
-            className={`ticker-row boot boot-${Math.min(10 + i, 11)} ${run.state}`}
+            className={`ticker-row boot boot-${10 + i} ${run.state}`}
           >
             <span>{run.ticket_subject}</span>
             <span className={`ticker-state ${run.state}`}>

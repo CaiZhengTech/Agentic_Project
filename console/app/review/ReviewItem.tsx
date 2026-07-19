@@ -64,10 +64,7 @@ export default function ReviewItem({
   }
 
   return (
-    <section
-      className="review-card"
-      style={{ padding: "1rem 1.25rem", marginBottom: "1rem" }}
-    >
+    <section className="review-card">
       <h3 style={{ marginTop: 0 }}>
         #{item.ticket_id} — {item.ticket_subject}
       </h3>

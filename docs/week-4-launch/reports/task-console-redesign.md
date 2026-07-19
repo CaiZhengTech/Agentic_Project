@@ -61,9 +61,10 @@ confirms `useState(false)`.
 | `--muted #7d8a96` on `--bg` / on `--surface` | 5.48 / 5.19 |
 | `--text #e8edf2` on `--bg` | 16.43 |
 | `--text-dim #9daebc` on `--bg` | 8.49 |
-| `--amber` on `--bg` / on amber-tint rows | 10.97 / 9.85 |
-| `--green` on `--bg` / on green-tint | 11.06 / 9.78 |
-| `--red` on `--bg` / on red-tint | 6.67 / 6.20 |
+| `--amber` on `--bg` / on amber-tint rows | 10.97 / 9.30 |
+| `--green` on `--bg` / on green-tint | 11.06 / 9.38 |
+| `--red` on `--bg` / on red-tint | 6.67 / 5.96 |
+| `--muted` on amber-tint rows | 4.64 |
 | Pause banner `#0b0e11` on `--amber` | 10.97 |
 | `--faint #5d6b78` (decorative only, never information) | 3.54 |
 
@@ -86,6 +87,37 @@ Known gaps (pre-existing, on record, deliberately untouched):
   formatting.
 - The operator-token input keeps its exact placeholder/behavior (copy was
   out of scope).
+
+## Self-review round (two finder agents, findings judged then fixed)
+
+Fixed on the branch after review:
+- `tr:last-child` border rule also matched the header row (thead's only `<tr>`
+  is a `:last-child`), stripping the border under column headers → scoped to
+  `tbody tr:last-child`.
+- Error boundary message rendered dim gray, not red: the element rule
+  `code { color: var(--text-dim) }` beat the inherited `.error-text` class →
+  added `.error-text code { color: inherit }`.
+- State-row tints raised 0.07 → 0.1 alpha (honesty rule: the row-level signal
+  was leaning too hard on the 3px rail alone on dim screens).
+- Panel headings had browser-default h2 margins stacked on panel padding →
+  `.panel .eyebrow { margin: 0 }`.
+- Hardcoded `#0b0e11` in `.btn-primary`/`.pause-banner` → `var(--bg)`.
+- Boot stagger clamp gave ticker rows 2 and 3 the same delay → added
+  `.boot-12`, removed the clamp.
+- Review-card padding/margin moved from inline style into `.review-card`.
+
+Noted, deliberately not changed (surgical-changes rule):
+- Landing hero stats are static copy by design — they quote the documented
+  eval record (PITCH), not live data; the ticker below is the live part. A
+  stats API endpoint would be production polish (case-study paragraph).
+- `stateGlyph` map on the landing duplicates state→visual knowledge that
+  also lives in `lib/format.ts` — three lines, one consumer; consolidate if
+  a third consumer appears.
+- IBM Plex Sans loads for `.prose` only — kept: the mono/sans voice split is
+  the identity's reading-comfort seam for long agent replies.
+- `.panel { overflow: hidden }` can clip focus outlines of links flush with
+  panel edges — cell padding (0.6–0.85rem) exceeds the 2px outline offset,
+  so not reproducible today.
 
 ## Verification
 
