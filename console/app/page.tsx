@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { listRuns } from "@/lib/api";
 import { formatCost } from "@/lib/format";
+import Pipeline from "./Pipeline";
 
 export const metadata = {
   title: "TriageDesk — glass-box ticket triage",
@@ -70,57 +71,7 @@ export default async function LandingPage() {
       <section className="panel lifecycle boot boot-9">
         <h2 className="eyebrow">Lifecycle — five stages, two exits</h2>
         <div className="panel-pad">
-          <div
-            className="pipeline"
-            role="img"
-            aria-label="Pipeline: precheck, classify, retrieve, act, then a confidence gate. Runs exit either to auto-resolve (only above calibrated thresholds) or to human review (every denial exits here)."
-          >
-            <div className="stage pl-1">
-              <b>PRECHECK</b>
-              <span>injection · PII screen</span>
-            </div>
-            <span className="flow" aria-hidden="true">
-              ▸
-            </span>
-            <div className="stage pl-2">
-              <b>CLASSIFY</b>
-              <span>queue + margin</span>
-            </div>
-            <span className="flow" aria-hidden="true">
-              ▸
-            </span>
-            <div className="stage pl-3">
-              <b>RETRIEVE</b>
-              <span>KB evidence, k=3</span>
-            </div>
-            <span className="flow" aria-hidden="true">
-              ▸
-            </span>
-            <div className="stage pl-4">
-              <b>ACT</b>
-              <span>account · entitlement tools</span>
-            </div>
-            <span className="flow" aria-hidden="true">
-              ▸
-            </span>
-            <div className="stage pl-5">
-              <b>GATE</b>
-              <span>multi-signal confidence</span>
-            </div>
-            <span className="flow" aria-hidden="true">
-              ▸
-            </span>
-            <div className="outcomes">
-              <div className="outcome outcome-green pl-6">
-                <b>AUTO-RESOLVE</b>
-                <span>only above calibrated thresholds</span>
-              </div>
-              <div className="outcome pl-7">
-                <b>HUMAN REVIEW</b>
-                <span>every denial exits here</span>
-              </div>
-            </div>
-          </div>
+          <Pipeline mode="ambient" />
           <p className="muted lifecycle-caption">
             Dana&apos;s VPN ticket rides these five stages on every run — a
             deny-shaped reply can only exit through human review.
@@ -170,6 +121,12 @@ export default async function LandingPage() {
                 <span>{counts.completed}</span>
               </li>
             </ul>
+            {counts.completed === 0 && (
+              <p className="muted dist-note">
+                0 completed isn&apos;t a bug — nothing auto-resolves below the
+                calibrated thresholds. The gate is doing its job.
+              </p>
+            )}
           </div>
         </section>
 

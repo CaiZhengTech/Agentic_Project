@@ -615,6 +615,72 @@ label {
   user-select: none;
 }
 
+/* ---- live mode: stage state comes from real span data, not the clock ---- */
+
+.pipeline-live .stage::after,
+.pipeline-live .outcome::after {
+  animation: none;
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.pipeline-live .stage[data-state="done"]::after {
+  opacity: 0.55;
+}
+
+.pipeline-live .stage[data-state="active"]::after {
+  animation: live-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.pipeline-live .stage[data-state="done"] b,
+.pipeline-live .stage[data-state="active"] b {
+  color: var(--amber);
+}
+
+.pipeline-live .outcome[data-lit="true"]::after {
+  opacity: 1;
+}
+
+.pipeline-live .outcome[data-lit="true"] {
+  background: var(--amber-tint);
+}
+
+.pipeline-live .outcome-green[data-lit="true"] {
+  background: var(--green-tint);
+}
+
+/* entrance: @starting-style — the panel appears the moment a run starts */
+.live-panel {
+  margin-top: 1.5rem;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 480ms var(--ease-out), transform 480ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.live-verdict {
+  margin: 0.9rem 0 0;
+}
+
+.live-footer {
+  font-size: 0.75rem;
+  margin: 0.6rem 0 0;
+}
+
 .outcomes {
   display: flex;
   flex-direction: column;
@@ -728,6 +794,11 @@ label {
   color: var(--green);
 }
 
+.dist-note {
+  font-size: 0.75rem;
+  margin: 0.7rem 0 0;
+}
+
 .ticker {
   margin: 0;
 }
@@ -822,6 +893,30 @@ label {
 .boot-11 { animation-delay: 760ms; }
 .boot-12 { animation-delay: 820ms; }
 
+/* scroll-driven reveals for below-fold panels: compositor-only, zero JS,
+   no-motion-first (motion only for users who haven't asked for less) */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .lifecycle,
+    .dash .panel {
+      animation: scroll-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 60%;
+    }
+  }
+}
+
+@keyframes scroll-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .boot,
   .ticker .ticker-row,
@@ -839,6 +934,24 @@ label {
   .outcome::after {
     animation: none;
     opacity: 0.45;
+  }
+  .pipeline-live .stage::after,
+  .pipeline-live .outcome::after {
+    opacity: 0;
+    transition: none;
+  }
+  .pipeline-live .stage[data-state="done"]::after {
+    opacity: 0.55;
+  }
+  .pipeline-live .stage[data-state="active"]::after {
+    animation: none;
+    opacity: 1;
+  }
+  .pipeline-live .outcome[data-lit="true"]::after {
+    opacity: 1;
+  }
+  .live-panel {
+    transition: none;
   }
   .stat:hover {
     transform: none;
