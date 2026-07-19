@@ -718,16 +718,27 @@ label {
   background: var(--green-tint);
 }
 
-/* live pipeline reads slightly larger than the ambient one — it's the show */
+/* Live pipeline: a strict equal-cell grid — five stages plus the outcome
+   stack, every cell the same width, every row the same height, one gap
+   rhythm throughout. Slightly larger than the ambient one — it's the show.
+   The flow arrows are dropped here; the lights carry the order. */
 .pipeline-live {
-  gap: 0.6rem;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+.pipeline-live .flow {
+  display: none;
 }
 
 .pipeline-live .stage,
 .pipeline-live .outcome {
-  flex-basis: 140px;
-  min-width: 130px;
-  padding: 0.7rem 0.85rem;
+  flex: none;
+  min-width: 0;
+  min-height: 96px;
+  padding: 0.8rem 0.9rem;
   font-size: 0.75rem;
 }
 
@@ -739,6 +750,28 @@ label {
 .pipeline-live .stage span,
 .pipeline-live .outcome span {
   font-size: 0.68rem;
+}
+
+.pipeline-live .outcomes {
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.pipeline-live .outcomes .outcome {
+  min-height: 0;
+}
+
+@media (max-width: 820px) {
+  .pipeline-live {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pipeline-live .outcomes {
+    grid-column: 1 / -1;
+    grid-template-rows: none;
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 /* entrance: @starting-style — the panel appears the moment a run starts */
