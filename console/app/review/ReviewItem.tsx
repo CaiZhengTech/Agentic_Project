@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { ReviewQueueItem } from "@/lib/api";
 import { postReview } from "@/lib/api";
+import AgentText from "../AgentText";
 import { formatCost, formatCreatedAt, formatLatency } from "@/lib/format";
 
 /**
@@ -91,17 +92,13 @@ export default function ReviewItem({
               created {formatCreatedAt(item.created_at)}
             </p>
             <h4 className="eyebrow">Draft reply</h4>
-            <p className="prose" style={{ margin: 0 }}>
-              {item.final_reply ?? "— none —"}
-            </p>
+            <AgentText text={item.final_reply} />
 
             <h4 className="eyebrow">Internal rationale</h4>
             <p className="rationale-caption">
               agent&apos;s post-hoc rationale — not evidence
             </p>
-            <p className="prose" style={{ margin: 0 }}>
-              {item.internal_rationale ?? "— none —"}
-            </p>
+            <AgentText text={item.internal_rationale} />
 
             <div style={{ marginTop: "1.1rem" }}>
               <label htmlFor={`note-${item.id}`}>Note (required)</label>

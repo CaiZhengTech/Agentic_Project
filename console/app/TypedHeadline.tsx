@@ -20,7 +20,6 @@ const DELETE_MS = 35;
 const HOLD_MS = 5200;
 const GAP_MS = 750;
 
-const LONGEST = PHRASES.reduce((a, b) => (b.length > a.length ? b : a));
 
 export default function TypedHeadline() {
   const [text, setText] = useState(PHRASES[0]);
@@ -67,10 +66,13 @@ export default function TypedHeadline() {
 
   return (
     <span className="type-wrap">
-      <span className="type-ghost" aria-hidden="true">
-        {LONGEST}
-      </span>
-      <span className="type-live" aria-hidden="true">
+      {/* every phrase reserves its own rendered height; the tallest wins */}
+      {PHRASES.map((phrase) => (
+        <span key={phrase} className="type-ghost" aria-hidden="true">
+          {phrase}_
+        </span>
+      ))}
+      <span aria-hidden="true">
         {text}
         <span className="cursor">_</span>
       </span>

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getRun } from "@/lib/api";
+import AgentText from "../../AgentText";
 import {
   formatCost,
   formatCreatedAt,
@@ -115,9 +116,9 @@ export default async function RunDetailPage({
 
       <section className="panel">
         <h2 className="eyebrow">Final reply</h2>
-        <p className="panel-pad prose" style={{ marginTop: 0 }}>
-          {run.final_reply ?? "— none —"}
-        </p>
+        <div className="panel-pad">
+          <AgentText text={run.final_reply} />
+        </div>
       </section>
 
       <section className="panel">
@@ -126,9 +127,7 @@ export default async function RunDetailPage({
           <p className="rationale-caption">
             agent&apos;s post-hoc rationale — not evidence
           </p>
-          <p className="prose" style={{ margin: 0 }}>
-            {run.internal_rationale ?? "— none —"}
-          </p>
+          <AgentText text={run.internal_rationale} />
         </div>
       </section>
     </main>

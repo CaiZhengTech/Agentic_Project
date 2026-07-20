@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import type { RunDetail, RunSummary } from "@/lib/api";
 import { getRun } from "@/lib/api";
+import AgentText from "../AgentText";
 import {
   formatCost,
   formatCreatedAt,
@@ -84,17 +85,13 @@ export default function RunCard({ run }: { run: RunSummary }) {
                 </table>
 
                 <h3 className="eyebrow">Final reply</h3>
-                <p className="prose" style={{ margin: 0 }}>
-                  {detail.final_reply ?? "— none —"}
-                </p>
+                <AgentText text={detail.final_reply} />
 
                 <h3 className="eyebrow">Internal rationale</h3>
                 <p className="rationale-caption">
                   agent&apos;s post-hoc rationale — not evidence
                 </p>
-                <p className="prose" style={{ margin: 0 }}>
-                  {detail.internal_rationale ?? "— none —"}
-                </p>
+                <AgentText text={detail.internal_rationale} />
               </>
             )}
 
