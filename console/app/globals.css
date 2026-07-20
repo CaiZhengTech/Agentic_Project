@@ -518,13 +518,14 @@ label {
   text-wrap: balance;
 }
 
-/* Rotating headline: every phrase is rendered as an invisible ghost stacked
-   in the same grid cell, so the block always reserves the height of the
-   tallest phrase AT THE CURRENT WIDTH — including any that wrap to two
-   lines. The live text shares that cell, so it can never overflow and the
-   page below never jumps. */
+/* Rotating headline: the wrapper's height is measured from a hidden ghost of
+   the CURRENT phrase (see TypedHeadline.tsx) and animated, so the space below
+   adapts to whatever is being typed instead of standing at the tallest phrase
+   forever. Ghost and live text share one grid cell, so the typed text is
+   always inside the claimed space. */
 .type-wrap {
   display: grid;
+  transition: height 420ms var(--ease-out);
 }
 
 .type-wrap > * {
@@ -1225,7 +1226,8 @@ label {
     transform: none;
   }
   .card-body,
-  .chevron {
+  .chevron,
+  .type-wrap {
     transition: none;
   }
   .page-enter {
