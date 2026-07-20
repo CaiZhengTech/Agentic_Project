@@ -12,6 +12,7 @@ export default function SiteHeader() {
         REC
       </Link>
       <nav>
+        <Link href="/">Home</Link>
         <Link href="/runs">Runs</Link>
         <Link href="/review">Review</Link>
         <Link href="/demo">Demo</Link>
