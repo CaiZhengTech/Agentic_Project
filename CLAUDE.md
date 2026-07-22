@@ -5,30 +5,35 @@ Northeast US (NYC/Boston) new-grad SWE roles, fall 2026 cycle. The differentiato
 agent — it's the eval/observability/trust discipline around it (market research: eval design
 is the #1 hiring signal; plain RAG demos are a yellow flag).
 
-## Status (updated 2026-07-17)
+## Status (updated 2026-07-21)
 
-**WEEK 3 COMPLETE (2026-07-18) — THE SYSTEM IS LIVE, #13–#16 ALL CLOSED.**
-Console: **https://triage-desk-xi.vercel.app** · API:
-**https://agenticproject-production.up.railway.app** (Railway/Railpack + Neon `prod`
-branch + Vercel; smoke run `41a3486e` exit 0, $0.0355; NOTHING descoped; deploy record
-+ live facts: `docs/week-3-console/reports/task-6-deploy.md` + HANDOFF). **Next: Week 4
-— #17 demo video (wire its URL into the demo pause banner placeholder) → #18 case study
-+ `results/` + final README (adversarial catch rate = the standalone headline; every
-deliberate cut gets a "what I'd add in production" paragraph). Stretch: #56 console UI
-polish (Cai's ask, `console/**`-only ⇒ $0 gate).** Budget ~$9.6 of $20 (⚠️ eval-path
-merges still auto-trigger the ~$0.90 gate — batch them; `console/**`/docs don't; public
-demo runs bill ~3.5¢ each against the demo's own $1/day cap — that's the guard working).
+**WEEK 4 IN PROGRESS — #56 + #58 CLOSED AND LIVE; #17/#18 REMAIN.**
+Console: **https://triage-desk-xi.vercel.app** (flight-recorder redesign +
+live run progress, both deployed and re-verified 2026-07-21) · API:
+**https://agenticproject-production.up.railway.app**. **⚠️ Read
+`docs/week-4-launch/HANDOFF.md` FIRST** — a confirmed finding: the eval-gate
+CI job's `EVAL_DATABASE_URL` secret is currently pointed at the **production**
+Neon branch, not a dedicated eval branch (25 golden-set runs landed in prod
+on the 2026-07-20 eval-gate run). Needs a dedicated eval branch + secret fix
+before the next eval-gate run. **Next: fix that, then #17 demo video (wire
+its URL into the demo pause banner placeholder) → #18 case study +
+`results/` + final README** (adversarial catch rate = the standalone
+headline; every deliberate cut gets a "what I'd add in production"
+paragraph). Budget ~**$10.8 of $20** (⚠️ eval-path merges still auto-trigger
+the ~$0.90 gate — batch them; `console/**`/docs don't; public demo runs bill
+~3.5¢ each against the demo's own $1/day cap — that's the guard working).
 Week 2.5 record (quote kappas carefully): judge v2 improved invariantly (0.279→0.418 r1,
 0.038→0.133 r2) but Cai's self-agreement is kappa 0.212 — single-rater labels are the
 bottleneck; official v2 kappa 0.133 is noise-capped; next step = second rater (#19).
 Full table: `results/judge-calibration.md`. Thresholds derived from held-out data
 (`docs/week-2-evals/reports/threshold-derivation.md`); catch 5/5 design-intent + 3/5
 strict, both baseline-guarded; judge advises, never vetoes.
-**→ RESUME HERE:** `docs/week-3-console/HANDOFF.md` (Week 3 state + the exact Task-4
-dispatch recipe) → it links to `docs/week-2-evals/HANDOFF.md`, still the operating manual
-(environment, per-task choreography, budget rules, binding decisions). Last session:
-`docs/SESSION-LOG.md`. The map: `docs/README.md`. Raw ledger:
-`.superpowers/sdd/progress.md` (git-ignored, local).
+**→ RESUME HERE:** `docs/week-4-launch/HANDOFF.md` (Week 4 state, the eval-gate/prod-DB
+finding, exact budget) → links to `docs/week-3-console/HANDOFF.md` (Week 3 deploy facts)
+→ `docs/week-2-evals/HANDOFF.md`, still the operating manual (environment, per-task
+choreography, budget rules, binding decisions). Last session: `docs/SESSION-LOG.md`.
+The map: `docs/README.md`. Raw ledger: `.superpowers/sdd/progress.md` (git-ignored,
+local — now also excluded via `.gitignore` alongside the rest of `.superpowers/`).
 
 - **Live numbers on record:** adversarial catch rate **5/5 (100%)**, escalation recall
   **1.0**, precision 0.88, ~**2.9¢/run** (prompt caching on), p50 31–34s. Routing accuracy

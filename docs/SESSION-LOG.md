@@ -9,6 +9,71 @@ read the current week's `HANDOFF.md`. For "what did task N build", read that wee
 
 ---
 
+## Session — 2026-07-19 → 07-21 · Wk4 console redesign + live run progress; #56 + #58 CLOSED, deployed
+
+**Where it started:** Week 3 complete, console deliberately plain per the council's
+build-order cut. Cai asked for a design pass (loaded frontend-design, emil-design-eng,
+web-design-guidelines, dataviz) plus, later, an LLM council session to pick the highest
+recruiter-impact-per-hour next feature.
+
+**What shipped:**
+1. **#56 — flight-recorder redesign** (PR #57, merged `b66aa78`): dark-only instrument-panel
+   identity across all four pages, a new cockpit-stack landing at `/` (run list moved to
+   `/runs`), hand-rolled CSS tokens (zero new deps — the council's zero-dependency cut held).
+   Two-agent self-review caught 7 pre-merge defects, including a CSS specificity bug that
+   rendered the error page's message in gray instead of red.
+2. **LLM council session** (5 advisors + peer review) on "what's next": 4-of-5 converged on
+   **live run progress** as the single highest-impact feature — the demo becomes watchable
+   instead of a 35-second silence. The dissenting Contrarian's risk concerns (on-camera
+   failure, "spotlighting ESCALATED") were verified false in peer review.
+3. **#58 — live run progress** (PR #59, merged `cb69291`): required a real backend fix, not
+   a workaround — `POST /api/demo/run` blocked synchronously despite claiming 202, so it
+   couldn't be polled. Moved to FastAPI `BackgroundTasks`; the daily-cap TOCTOU guarantee
+   (previously held by serialized execution) was re-established by reserving the per-run
+   cap for every in-flight `running` run. 208 unit tests green, including a re-seamed
+   concurrency regression test.
+4. **Iterative polish from live user feedback** (several rounds, same PR branch before
+   merge): fixed a genuine logic bug where the rotating headline never actually rotated
+   (started mid-array at full length, could never re-trigger); fixed a lifecycle-hover
+   desync bug (hover restarted one stage's animation out of phase — removed hover
+   entirely, it's choreography not a control); slowed both animations per explicit "too
+   fast reads as panic" feedback; converted the live pipeline from flex-wrap to a strict
+   equal-cell grid; converted run/review lists from static tables to expandable one-line
+   cards (the `0fr→1fr` grid-row technique); fixed agent replies rendering as one
+   unreadable blob (`white-space: pre-wrap` restored paragraph breaks already present in
+   the data — not a parsing problem); made the rotating-headline spacing track the
+   *current* phrase via `ResizeObserver` instead of permanently reserving the tallest.
+
+**Deployed and re-verified 2026-07-21:** both PRs merged to `main`; `ci` and `eval-gate`
+both green; Railway API and Vercel console confirmed serving the new build (spot-checked
+`/api/runs`, `/api/demo/pool`, `/runs`, `/demo`, and the new landing markup).
+
+**Two real problems found while closing out, both now documented in
+`docs/week-4-launch/HANDOFF.md`:**
+- **This session's local API pointed at the production database**, not a dev branch —
+  confirmed by matching run ids between local and prod `/api/runs`. The task report's
+  "verified on the dev Neon branch" claim was wrong and has been corrected in
+  `reports/task-live-progress.md`. No harm (honest runs, small cost), but the isolation
+  claimed didn't exist.
+- **The CI eval-gate's `EVAL_DATABASE_URL` secret is ALSO pointed at prod** — the
+  2026-07-20 eval-gate run wrote 25 golden-set eval runs into the same production run
+  history the public console displays. Confirmed by exact timestamp/count match with the
+  eval-gate log (`n_cases: 25`, same 13-minute window). Likely mixed up during the Week 3
+  Task 6 deploy session. Needs a dedicated Neon eval branch + secret fix — flagged as the
+  top item in the Week 4 HANDOFF, not yet fixed (infra/credentials change, held for Cai).
+
+**Housekeeping:** `.superpowers/` (the local ledger, brainstorm session state — which
+contained a local auth token — and regenerated review diffs) added to `.gitignore`;
+it was accumulating uncommitted every session without being meant to ship.
+
+**Spend this session:** eval-gate $0.879 (PASSED) + demo-pool verification runs $0.3007
+(8 runs, exact) ≈ **$1.18**. Running total ≈ **$10.78 of $20**.
+
+**Next session:** fix the eval-gate DB isolation first (top of Week 4 HANDOFF), then #17
+demo video, then #18 case study.
+
+---
+
 ## Session — 2026-07-18 · Wk3 Task 6 — THE SYSTEM IS LIVE; #15 CLOSED; WEEK 3 COMPLETE
 
 **Where it started:** all Week-3 code merged; Cai present with his Railway/Vercel accounts.

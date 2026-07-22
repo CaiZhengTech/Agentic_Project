@@ -41,8 +41,14 @@ docs/
     STORY.md               ★ plain-language walkthrough, task by task
     HANDOFF.md             the controller operating manual (how to run this project)
     reports/               per-task engineering evidence
-  week-3-console/        (not started — console + deploy, issues #13–#16)
-  week-4-story/          (not started — demo video + case study, issues #17–#18)
+  week-3-console/        the console + deploy (issues #13–#16, complete)
+    PLAN.md                the 7-task plan
+    HANDOFF.md              end-of-week state + live deployment facts
+    reports/               per-task engineering evidence, incl. the deploy record
+  week-4-launch/         console redesign + demo video + case study (issues #17, #18, #56, #58)
+    PLAN.md                the redesign plan (#56/#58)
+    HANDOFF.md              ★ current — Week 4 state, next action, budget
+    reports/               per-task engineering evidence
 ```
 
 **Naming convention:** the folder says *when*, the filename says *what*. No dates in

@@ -47,8 +47,18 @@ accepted deliberately at pickup.
 | Mid-run: 3 stages done, ACT pulsing | ![mid](assets/live-2-mid.png) |
 | Terminal: ESCALATED, HUMAN REVIEW lit | ![terminal](assets/live-4-terminal.png) |
 
-Verification run: Dana's VPN ticket through the full pipeline on the dev
-Neon branch, escalated `agent_requested_human`, ~3–4¢ (ledger updated).
+Verification run: Dana's VPN ticket through the full pipeline, escalated
+`agent_requested_human`, ~3–4¢.
+
+> **Correction (2026-07-21):** this originally said "the dev Neon branch."
+> That was wrong — the local API during this session's verification runs was
+> pointed at the **production** database (`https://…railway.app`'s own
+> `DATABASE_URL`), confirmed by matching run ids between the local and prod
+> `/api/runs` responses. All demo-verification runs across this session (this
+> task and the polish follow-ups) landed in prod, not a dev branch. They are
+> honest, real runs — nothing fabricated — but the isolation this report
+> claimed didn't exist. See `../HANDOFF.md` for the full finding, its likely
+> connection to the `EVAL_DATABASE_URL` mispoint, and the fix.
 
 ## Verification
 
